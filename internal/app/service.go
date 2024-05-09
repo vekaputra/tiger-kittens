@@ -11,7 +11,7 @@ type Service struct {
 
 func NewService(repo Repo, appConfig *config.Config) Service {
 	userConfig := service.UserConfig{
-		PrivateKey: appConfig.JWTConfig.PrivateKey,
+		JWTConfig: appConfig.JWTConfig,
 	}
 
 	return Service{

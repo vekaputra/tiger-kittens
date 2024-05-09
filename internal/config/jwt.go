@@ -3,17 +3,19 @@ package config
 import (
 	"crypto/rsa"
 	"os"
+	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/rs/zerolog/log"
 )
 
 type JWTConfig struct {
-	PrivateKey *rsa.PrivateKey
+	PrivateKey           *rsa.PrivateKey
+	ExpiredAfterInSecond time.Duration
 }
 
 func getJWTConfig() JWTConfig {
-	privateKeyPath := fatalGetString("PRIVATE_KEY_PATH")
+	privateKeyPath := fatalGetString("JWT_PRIVATE_KEY_PATH")
 
 	pemPrivateKey, err := os.ReadFile(privateKeyPath)
 	if err != nil {
@@ -26,6 +28,7 @@ func getJWTConfig() JWTConfig {
 	}
 
 	return JWTConfig{
-		PrivateKey: privateKey,
+		PrivateKey:           privateKey,
+		ExpiredAfterInSecond: fatalGetDuration("JWT_EXPIRED_AFTER_IN_SECONDS", time.Second),
 	}
 }

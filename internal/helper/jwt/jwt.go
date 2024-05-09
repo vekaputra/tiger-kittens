@@ -8,12 +8,14 @@ import (
 	pkgerr "github.com/vekaputra/tiger-kittens/pkg/error"
 )
 
-func GenerateAccessToken(key *rsa.PrivateKey, user entity.User) (string, error) {
+func GenerateAccessToken(key *rsa.PrivateKey, expiredAfter int64, user entity.User) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
 		"sub":      user.ID,
 		"username": user.Username,
 		"email":    user.Email,
+		"exp":      expiredAfter,
 	})
+
 	result, err := token.SignedString(key)
 	if err != nil {
 		return "", pkgerr.ErrWithStackTrace(err)

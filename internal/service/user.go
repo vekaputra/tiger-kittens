@@ -2,14 +2,13 @@ package service
 
 import (
 	"context"
-	"crypto/rsa"
 	"time"
 
-	"github.com/vekaputra/tiger-kittens/internal/helper/jwt"
-
+	"github.com/vekaputra/tiger-kittens/internal/config"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
 	"github.com/vekaputra/tiger-kittens/internal/helper/hash"
+	"github.com/vekaputra/tiger-kittens/internal/helper/jwt"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
 	"github.com/vekaputra/tiger-kittens/internal/repository/pgsql"
@@ -17,7 +16,7 @@ import (
 )
 
 type UserConfig struct {
-	PrivateKey *rsa.PrivateKey
+	config.JWTConfig
 }
 
 //go:generate mockery --name=UserServiceProvider --outpkg=mock --output=./mock
@@ -83,7 +82,8 @@ func (s *UserService) Login(ctx context.Context, payload model.LoginUserRequest)
 		return model.LoginUserResponse{}, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidCredential)
 	}
 
-	accessToken, err := jwt.GenerateAccessToken(s.Config.PrivateKey, user)
+	expiredAfter := s.fnTimeNow().Add(s.Config.ExpiredAfterInSecond).Unix()
+	accessToken, err := jwt.GenerateAccessToken(s.Config.PrivateKey, expiredAfter, user)
 	if err != nil {
 		return model.LoginUserResponse{}, err
 	}

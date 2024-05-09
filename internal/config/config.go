@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
+	"time"
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
@@ -59,4 +60,9 @@ func fatalGetInt(key string) int {
 func fatalGetBool(key string) bool {
 	fatalCheckKey(key)
 	return viper.GetBool(key)
+}
+
+func fatalGetDuration(key string, unit time.Duration) time.Duration {
+	fatalCheckKey(key)
+	return viper.GetDuration(key) * unit
 }
