@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Masterminds/squirrel"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog/log"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
 	pkgsqlx "github.com/vekaputra/tiger-kittens/pkg/database/sqlx"
@@ -55,8 +56,8 @@ func (r *UserRepository) FindByEmailOrUsername(ctx context.Context, email, usern
 
 func (r *UserRepository) Insert(ctx context.Context, entity entity.User) error {
 	query, args, err := r.sb.Insert(UserTable).
-		Columns("email", "password", "username").
-		Values(entity.Email, entity.Password, entity.Username).
+		Columns("id", "email", "password", "username").
+		Values(uuid.NewString(), entity.Email, entity.Password, entity.Username).
 		ToSql()
 	if err != nil {
 		return pkgerr.ErrWithStackTrace(err)

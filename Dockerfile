@@ -4,6 +4,7 @@ WORKDIR /go/src/app
 COPY ./cmd ./cmd
 COPY ./db ./db
 COPY ./env ./env
+COPY ./files ./files
 COPY ./internal ./internal
 COPY ./main.go ./
 COPY ./go.mod ./

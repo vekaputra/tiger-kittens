@@ -17,7 +17,7 @@ type Server struct {
 func NewServer(appConfig *config.Config) *Server {
 	conn := NewConnection(appConfig)
 	repo := NewRepo(conn)
-	service := NewService(repo)
+	service := NewService(repo, appConfig)
 
 	srv := &http.AppServer{
 		UserService: service.UserService,
@@ -39,10 +39,12 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 
 	userGroup := v1Group.Group("/user")
 	userGroup.POST("/register", srv.RegisterUser)
+	userGroup.POST("/login", srv.LoginUser)
 
 	if appConfig.IsAllowCORS {
 		e.OPTIONS("/healthcheck", middleware.HandleOptionsRequest(nhttp.MethodGet))
 
 		userGroup.OPTIONS("/register", middleware.HandleOptionsRequest(nhttp.MethodPost))
+		userGroup.OPTIONS("/login", middleware.HandleOptionsRequest(nhttp.MethodPost))
 	}
 }

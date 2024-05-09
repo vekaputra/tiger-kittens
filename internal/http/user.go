@@ -29,3 +29,24 @@ func (s *AppServer) RegisterUser(e echo.Context) error {
 
 	return response.SendSuccessResponse(e, result)
 }
+
+func (s *AppServer) LoginUser(e echo.Context) error {
+	ctx := e.Request().Context()
+
+	var payload model.LoginUserRequest
+	if err := e.Bind(&payload); err != nil {
+		log.Error().Err(err).Msg("failed bind payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+	if err := e.Validate(payload); err != nil {
+		log.Error().Err(err).Msg("failed validate payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+
+	result, err := s.UserService.Login(ctx, payload)
+	if err != nil {
+		return response.SendResponseWithNativeError(e, err)
+	}
+
+	return response.SendSuccessResponse(e, result)
+}

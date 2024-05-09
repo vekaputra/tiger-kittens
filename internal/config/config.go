@@ -14,6 +14,7 @@ type Config struct {
 	DatabaseConfig DatabaseConfig
 	IsAllowCORS    bool
 	IsEnableDebug  bool
+	JWTConfig      JWTConfig
 	Port           int
 }
 
@@ -33,6 +34,7 @@ func Load() *Config {
 		DatabaseConfig: getDatabaseConfig(),
 		IsAllowCORS:    fatalGetBool("ALLOW_CORS"),
 		IsEnableDebug:  fatalGetBool("ENABLE_DEBUG"),
+		JWTConfig:      getJWTConfig(),
 		Port:           fatalGetInt("PORT"),
 	}
 }
