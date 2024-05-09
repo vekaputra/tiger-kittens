@@ -3,12 +3,13 @@ package cmd
 import (
 	"errors"
 	"fmt"
+	"log"
+	"path/filepath"
+
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/spf13/cobra"
-	"log"
-	"path/filepath"
 )
 
 type DB struct {
@@ -23,7 +24,7 @@ type DB struct {
 func newDBMigrateCommand(db DB) *cobra.Command {
 	return &cobra.Command{
 		Use:   "db:migrate",
-		Short: "Execute the migration from 'db/migrations' folder",
+		Short: "execute the migration from 'db/migrations' folder",
 		Run: func(cmd *cobra.Command, args []string) {
 			absPath, err := filepath.Abs("db/migrations")
 			if err != nil {

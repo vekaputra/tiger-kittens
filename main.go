@@ -1,13 +1,23 @@
 package main
 
 import (
-	"github.com/vekaputra/tiger-kittens/cmd"
-	"github.com/vekaputra/tiger-kittens/internal/config"
 	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/vekaputra/tiger-kittens/cmd"
+	"github.com/vekaputra/tiger-kittens/internal/app"
+	"github.com/vekaputra/tiger-kittens/internal/config"
 )
 
 func main() {
 	appConfig := config.Load()
+	srv := app.NewServer(appConfig)
+
+	// setup zerolog
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	if appConfig.IsEnableDebug {
+		zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	}
 
 	cmdConfig := cmd.Config{
 		Use:   "tiger-kittens",
@@ -22,7 +32,8 @@ func main() {
 		Port:     appConfig.DatabaseConfig.Port,
 		Name:     appConfig.DatabaseConfig.DBName,
 	}
-	cli := cmd.New(cmdConfig, cmdDB)
+
+	cli := cmd.New(cmdConfig, cmdDB, srv)
 	if err := cli.Execute(); err != nil {
 		os.Exit(1)
 	}

@@ -3,16 +3,17 @@ package cmd
 import (
 	"errors"
 	"fmt"
-	"github.com/golang-migrate/migrate/v4"
-	"github.com/spf13/cobra"
 	"log"
 	"path/filepath"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/spf13/cobra"
 )
 
 func newDBRollbackCommand(db DB) *cobra.Command {
 	return &cobra.Command{
 		Use:   "db:rollback",
-		Short: "Rollback the migration to the previous 1 version",
+		Short: "rollback the migration to the previous 1 version",
 		Run: func(cmd *cobra.Command, args []string) {
 			absPath, err := filepath.Abs("db/migrations")
 			if err != nil {

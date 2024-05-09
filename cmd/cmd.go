@@ -1,6 +1,9 @@
 package cmd
 
-import "github.com/spf13/cobra"
+import (
+	"github.com/spf13/cobra"
+	"github.com/vekaputra/tiger-kittens/internal/app"
+)
 
 type Config struct {
 	// Use is the one-line usage message.
@@ -13,14 +16,14 @@ type Config struct {
 	Long string
 }
 
-func New(c Config, db DB) *cobra.Command {
+func New(c Config, db DB, srv *app.Server) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   c.Use,
 		Short: c.Short,
 		Long:  c.Long,
 	}
 
-	cmd.AddCommand(newServeCommand())
+	cmd.AddCommand(newServeCommand(srv.Server, srv.Connection.DB))
 	cmd.AddCommand(newDBMigrateCommand(db))
 	cmd.AddCommand(newDBRollbackCommand(db))
 

@@ -2,15 +2,19 @@ package config
 
 import (
 	"fmt"
-	"github.com/rs/zerolog/log"
-	"github.com/spf13/viper"
 	"os"
 	"runtime/debug"
+
+	"github.com/rs/zerolog/log"
+	"github.com/spf13/viper"
 )
 
 type Config struct {
 	Env            string
 	DatabaseConfig DatabaseConfig
+	IsAllowCORS    bool
+	IsEnableDebug  bool
+	Port           int
 }
 
 func Load() *Config {
@@ -27,6 +31,9 @@ func Load() *Config {
 	return &Config{
 		Env:            fatalGetString("ENV"),
 		DatabaseConfig: getDatabaseConfig(),
+		IsAllowCORS:    fatalGetBool("ALLOW_CORS"),
+		IsEnableDebug:  fatalGetBool("ENABLE_DEBUG"),
+		Port:           fatalGetInt("PORT"),
 	}
 }
 
@@ -45,4 +52,9 @@ func fatalGetString(key string) string {
 func fatalGetInt(key string) int {
 	fatalCheckKey(key)
 	return viper.GetInt(key)
+}
+
+func fatalGetBool(key string) bool {
+	fatalCheckKey(key)
+	return viper.GetBool(key)
 }
