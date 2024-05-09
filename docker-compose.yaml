@@ -1,7 +1,7 @@
 version: '3'
 services:
   postgres:
-    image: postgres:16.2-alpine
+    image: postgres:15.6-alpine
     restart: always
     volumes:
       - ./pgdata:/var/lib/postgresql/data
@@ -9,3 +9,9 @@ services:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: root
+      POSTGRES_DB: tiger_kittens
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
