@@ -22,7 +22,7 @@ func (s *AppServer) RegisterUser(e echo.Context) error {
 		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
 	}
 
-	result, err := s.UserService.RegisterUser(ctx, payload)
+	result, err := s.UserService.Register(ctx, payload)
 	if err != nil {
 		return response.SendResponseWithNativeError(e, err)
 	}

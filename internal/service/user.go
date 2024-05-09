@@ -4,19 +4,18 @@ import (
 	"context"
 	"time"
 
-	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
-	pkgerr "github.com/vekaputra/tiger-kittens/pkg/error"
-
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
+	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
 	"github.com/vekaputra/tiger-kittens/internal/helper/hash"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
 	"github.com/vekaputra/tiger-kittens/internal/repository/pgsql"
+	pkgerr "github.com/vekaputra/tiger-kittens/pkg/error"
 )
 
 //go:generate mockery --name=UserServiceProvider --outpkg=mock --output=./mock
 type UserServiceProvider interface {
-	RegisterUser(ctx context.Context, payload model.RegisterUserRequest) (model.MessageResponse, error)
+	Register(ctx context.Context, payload model.RegisterUserRequest) (model.MessageResponse, error)
 }
 
 type UserService struct {
@@ -31,7 +30,7 @@ func NewUserService(userRepository pgsql.UserRepositoryProvider) *UserService {
 	}
 }
 
-func (s *UserService) RegisterUser(ctx context.Context, payload model.RegisterUserRequest) (model.MessageResponse, error) {
+func (s *UserService) Register(ctx context.Context, payload model.RegisterUserRequest) (model.MessageResponse, error) {
 	users, err := s.UserRepository.FindByEmailOrUsername(ctx, payload.Email, payload.Username)
 	if err != nil {
 		return model.MessageResponse{}, err
