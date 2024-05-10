@@ -14,13 +14,35 @@ Postman collection can be found in the root of this project in file named `tiger
 
 Create new user
 
+```
+Validation:
+- email is required, must be an email, max 64 char
+- password is required, between 8-20 char, must contain lower case, upper case and number
+- username is required, between 6-64 char, only alphanum
+```
+
 ### Login `POST /v1/user/login`
 
 Login to existing user
 
+```
+Validation:
+- password is required, between 8-20 char, must contain lower case, upper case and number
+- username is required, between 6-64 char (can be filled with email)
+```
+
 ### Create Tiger `POST /v1/tiger`
 
 Create new tiger
+```
+Validation:
+- lastLat is required, between -90 - 90
+- lastLong is required, between -180 - 180
+- lastSeen is required, RFC3339 or ISO8601
+- lastPhoto is required, can only handle jpeg and png
+- date_of_birth is required, date only (2006-01-02)
+- name is required, between 3-64 char
+```
 
 ### List Tiger `GET /v1/tiger?page=1&per_page=5`
 
@@ -29,6 +51,12 @@ List all tigers according to pagination
 ### Create Sighting `POST /v1/tiger/{tigerID}sighting`
 
 Create new sighting, will update lastLat, lastLong, lastSeen and lastPhoto in related tigerID
+```
+Validation:
+- lat is required, between -90 - 90
+- long is required, between -180 - 180
+- photo is required, can only handle jpeg and png
+```
 
 ### List Sighting `GET /v1/tiger/{tigerID}/sighting`
 

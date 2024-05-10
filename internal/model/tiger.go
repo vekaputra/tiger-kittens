@@ -7,11 +7,11 @@ import (
 )
 
 type CreateTigerRequest struct {
-	LastLat     float64   `form:"last_lat"`
-	LastLong    float64   `form:"last_long"`
-	LastSeen    time.Time `form:"last_seen"`
-	Name        string    `form:"name"`
-	DateOfBirth time.Time
+	LastLat     float64   `form:"last_lat" validate:"required,min=-90,max=90"`
+	LastLong    float64   `form:"last_long" validate:"required,min=-180,max=180"`
+	LastSeen    time.Time `form:"last_seen" validate:"required"`
+	Name        string    `form:"name" validate:"required,min=3,max=64"`
+	DateOfBirth time.Time `validate:"required"`
 	LastPhoto   string
 }
 
@@ -21,16 +21,16 @@ type ListTigerResponse struct {
 }
 
 type CreateSightingRequest struct {
-	TigerID int     `param:"tigerID"`
-	Lat     float64 `form:"lat"`
-	Long    float64 `form:"long"`
+	TigerID int     `param:"tigerID" validate:"required"`
+	Lat     float64 `form:"lat" validate:"required,min=-90,max=90"`
+	Long    float64 `form:"long"  validate:"required,min=-180,max=180"`
+	UserID  string  `validate:"required"`
 	Photo   string
-	UserID  string
 }
 
 type ListSightingRequest struct {
 	PaginationRequest
-	TigerID int `param:"tigerID"`
+	TigerID int `param:"tigerID" validate:"required"`
 }
 
 type ListSightingResponse struct {
