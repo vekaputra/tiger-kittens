@@ -118,7 +118,7 @@ func (r *TigerRepository) FindWithPagination(ctx context.Context, page model.Pag
 		"updated_at",
 	).
 		From(TigerTable).
-		OrderBy("created_at DESC").
+		OrderBy("last_seen DESC").
 		Offset(pagination.SQLOffset(page.Page, page.PerPage)).
 		Limit(page.PerPage).
 		ToSql()
