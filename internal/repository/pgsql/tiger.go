@@ -29,9 +29,9 @@ type TigerRepositoryProvider interface {
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
 	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
-	TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error)
-	TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error
-	TxUpdate(ctx context.Context, tx *sqlx.Tx, entity entity.Tiger) error
+	TxFindByID(ctx context.Context, tx sqlx.ExtContext, id int) (*entity.Tiger, error)
+	TxInsertSighting(ctx context.Context, tx sqlx.ExtContext, entity entity.TigerSighting) error
+	TxUpdate(ctx context.Context, tx sqlx.ExtContext, entity entity.Tiger) error
 }
 
 type TigerRepository struct {
@@ -147,7 +147,7 @@ func (r *TigerRepository) FindWithPagination(ctx context.Context, page model.Pag
 	return result, nil
 }
 
-func (r *TigerRepository) TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error) {
+func (r *TigerRepository) TxFindByID(ctx context.Context, tx sqlx.ExtContext, id int) (*entity.Tiger, error) {
 	query, args, err := r.sb.Select(
 		"id",
 		"date_of_birth",
@@ -168,7 +168,8 @@ func (r *TigerRepository) TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (
 	}
 
 	var result entity.Tiger
-	if err = tx.GetContext(ctx, &result, query, args...); err != nil {
+	row := tx.QueryRowxContext(ctx, query, args...)
+	if err = row.StructScan(&result); err != nil {
 		log.Error().Err(err).Msg("failed to find tigers by id")
 		return nil, pkgerr.ErrWithStackTrace(err)
 	}
@@ -176,7 +177,7 @@ func (r *TigerRepository) TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (
 	return &result, nil
 }
 
-func (r *TigerRepository) TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error {
+func (r *TigerRepository) TxInsertSighting(ctx context.Context, tx sqlx.ExtContext, entity entity.TigerSighting) error {
 	query, args, err := r.sb.Insert(TigerSightingTable).
 		Columns("user_id", "tiger_id", "lat", "long", "photo").
 		Values(
@@ -199,7 +200,7 @@ func (r *TigerRepository) TxInsertSighting(ctx context.Context, tx *sqlx.Tx, ent
 	return nil
 }
 
-func (r *TigerRepository) TxUpdate(ctx context.Context, tx *sqlx.Tx, entity entity.Tiger) error {
+func (r *TigerRepository) TxUpdate(ctx context.Context, tx sqlx.ExtContext, entity entity.Tiger) error {
 	query, args, err := r.sb.Update(TigerTable).
 		Set("last_lat", entity.LastLat).
 		Set("last_long", entity.LastLong).
