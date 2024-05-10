@@ -9,7 +9,8 @@ import (
 )
 
 type AppServer struct {
-	UserService service.UserServiceProvider
+	TigerService service.TigerServiceProvider
+	UserService  service.UserServiceProvider
 }
 
 func (s *AppServer) ReadinessCheck(e echo.Context) error {

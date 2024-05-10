@@ -1,5 +1,6 @@
 package _const
 
 const (
-	RegisterSuccessMessage = "success register new user"
+	CreateTigerSuccessMessage = "success create new tiger"
+	RegisterSuccessMessage    = "success register new user"
 )

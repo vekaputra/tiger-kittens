@@ -47,7 +47,7 @@ func (r *UserRepository) FindByEmailOrUsername(ctx context.Context, email, usern
 
 	var result []entity.User
 	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
-		log.Error().Err(err).Msg("failed to find by email or username")
+		log.Error().Err(err).Msg("failed to find users by email or username")
 		return []entity.User{}, pkgerr.ErrWithStackTrace(err)
 	}
 

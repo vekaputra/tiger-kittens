@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -37,8 +38,14 @@ func NewEcho(config *config.Config) *EchoServer {
 
 	if config.IsEnableDebug {
 		e.Use(middleware.BodyDump(func(c echo.Context, reqBody, resBody []byte) {
+			if strings.Contains(c.Request().Header.Get("Content-Type"), "json") {
+				log.Info().
+					Str("request", string(reqBody)).
+					Str("response", string(resBody)).
+					Msg("request and response body")
+			}
+
 			log.Info().
-				Str("request", string(reqBody)).
 				Str("response", string(resBody)).
 				Msg("request and response body")
 		}))

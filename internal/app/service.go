@@ -6,7 +6,8 @@ import (
 )
 
 type Service struct {
-	UserService service.UserServiceProvider
+	TigerService service.TigerServiceProvider
+	UserService  service.UserServiceProvider
 }
 
 func NewService(repo Repo, appConfig *config.Config) Service {
@@ -15,6 +16,7 @@ func NewService(repo Repo, appConfig *config.Config) Service {
 	}
 
 	return Service{
-		UserService: service.NewUserService(userConfig, repo.UserRepo),
+		TigerService: service.NewTigerService(repo.TigerRepo),
+		UserService:  service.NewUserService(userConfig, repo.UserRepo),
 	}
 }

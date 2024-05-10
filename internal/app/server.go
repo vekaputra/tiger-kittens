@@ -20,7 +20,8 @@ func NewServer(appConfig *config.Config) *Server {
 	service := NewService(repo, appConfig)
 
 	srv := &http.AppServer{
-		UserService: service.UserService,
+		TigerService: service.TigerService,
+		UserService:  service.UserService,
 	}
 
 	e := NewEcho(appConfig)
@@ -41,10 +42,15 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 	userGroup.POST("/register", srv.RegisterUser)
 	userGroup.POST("/login", srv.LoginUser)
 
+	tigerGroup := v1Group.Group("/tiger")
+	tigerGroup.POST("", srv.CreateTiger)
+
 	if appConfig.IsAllowCORS {
 		e.OPTIONS("/healthcheck", middleware.HandleOptionsRequest(nhttp.MethodGet))
 
 		userGroup.OPTIONS("/register", middleware.HandleOptionsRequest(nhttp.MethodPost))
 		userGroup.OPTIONS("/login", middleware.HandleOptionsRequest(nhttp.MethodPost))
+
+		tigerGroup.OPTIONS("", middleware.HandleOptionsRequest(nhttp.MethodPost))
 	}
 }
