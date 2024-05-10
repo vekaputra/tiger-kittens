@@ -6,6 +6,9 @@ import (
 )
 
 func SQLOffset(page, perPage uint64) uint64 {
+	if page == 0 {
+		page = 1
+	}
 	return (page - 1) * perPage
 }
 
