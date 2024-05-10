@@ -8,6 +8,7 @@ import (
 	"github.com/vekaputra/tiger-kittens/internal/repository/pgsql"
 )
 
+//go:generate mockery --name=Provider --outpkg=mock --output=./mock
 type Provider interface {
 	Add(job SendEmailJob)
 }
