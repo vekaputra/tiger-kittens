@@ -6,6 +6,8 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog/log"
+	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
+	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
 	pkgsqlx "github.com/vekaputra/tiger-kittens/pkg/database/sqlx"
 	pkgerr "github.com/vekaputra/tiger-kittens/pkg/error"
@@ -16,7 +18,9 @@ const (
 )
 
 type TigerRepositoryProvider interface {
+	Count(ctx context.Context) (uint64, error)
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
+	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
 }
 
@@ -82,4 +86,51 @@ func (r *TigerRepository) Insert(ctx context.Context, entity entity.Tiger) error
 	}
 
 	return nil
+}
+
+func (r *TigerRepository) Count(ctx context.Context) (uint64, error) {
+	query, args, err := r.sb.Select("COUNT(1)").
+		From(TigerTable).
+		ToSql()
+	if err != nil {
+		return 0, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var totalItem uint64
+	if err = r.db.GetContext(ctx, &totalItem, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to count tigers")
+		return 0, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return totalItem, nil
+}
+
+func (r *TigerRepository) FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error) {
+	query, args, err := r.sb.Select(
+		"id",
+		"date_of_birth",
+		"last_lat",
+		"last_long",
+		"last_photo",
+		"last_seen",
+		"name",
+		"created_at",
+		"updated_at",
+	).
+		From(TigerTable).
+		OrderBy("created_at DESC").
+		Offset(pagination.SQLOffset(page.Page, page.PerPage)).
+		Limit(page.PerPage).
+		ToSql()
+	if err != nil {
+		return []entity.Tiger{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result []entity.Tiger
+	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to find tigers with pagination")
+		return []entity.Tiger{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return result, nil
 }

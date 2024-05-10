@@ -3,6 +3,8 @@ package http
 import (
 	"time"
 
+	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
+
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
@@ -53,6 +55,27 @@ func (s *AppServer) CreateTiger(e echo.Context) error {
 	payload.LastPhoto = filepath
 
 	result, err := s.TigerService.Create(ctx, payload)
+	if err != nil {
+		return response.SendResponseWithNativeError(e, err)
+	}
+
+	return response.SendSuccessResponse(e, result)
+}
+
+func (s *AppServer) ListTiger(e echo.Context) error {
+	ctx := e.Request().Context()
+
+	var page model.PaginationRequest
+	if err := e.Bind(&page); err != nil {
+		log.Error().Err(err).Msg("failed bind payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+	if err := e.Validate(page); err != nil {
+		log.Error().Err(err).Msg("failed validate payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+
+	result, err := s.TigerService.List(ctx, pagination.DefaultPagination(page))
 	if err != nil {
 		return response.SendResponseWithNativeError(e, err)
 	}

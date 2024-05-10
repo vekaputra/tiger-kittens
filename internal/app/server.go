@@ -43,6 +43,7 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 	userGroup.POST("/login", srv.LoginUser)
 
 	tigerGroup := v1Group.Group("/tiger")
+	tigerGroup.GET("", srv.ListTiger)
 	tigerGroup.POST("", srv.CreateTiger)
 
 	if appConfig.IsAllowCORS {
@@ -51,6 +52,6 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 		userGroup.OPTIONS("/register", middleware.HandleOptionsRequest(nhttp.MethodPost))
 		userGroup.OPTIONS("/login", middleware.HandleOptionsRequest(nhttp.MethodPost))
 
-		tigerGroup.OPTIONS("", middleware.HandleOptionsRequest(nhttp.MethodPost))
+		tigerGroup.OPTIONS("", middleware.HandleOptionsRequest(nhttp.MethodPost, nhttp.MethodGet))
 	}
 }
