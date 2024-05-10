@@ -19,6 +19,7 @@ const (
 	TigerSightingTable = "tiger_sightings"
 )
 
+//go:generate mockery --name=TigerRepositoryProvider --outpkg=mock --output=../mock
 type TigerRepositoryProvider interface {
 	pkgsqlx.TxProvider
 	Count(ctx context.Context) (uint64, error)

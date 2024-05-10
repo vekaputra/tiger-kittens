@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/go-playground/assert/v2"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestUserIDContext(t *testing.T) {
