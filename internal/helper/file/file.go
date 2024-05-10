@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"image"
 
+	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
+
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
 	"github.com/google/uuid"
@@ -36,7 +38,7 @@ func Save(e echo.Context, key string, opt ResizeOption) (string, error) {
 	img, ext, err := image.Decode(src)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to decode image")
-		return "", pkgerr.ErrWithStackTrace(err)
+		return "", pkgerr.ErrWithStackTrace(customerror.ErrorImageNotSupported)
 	}
 
 	if opt.IsResize {
