@@ -88,60 +88,6 @@ INSERT INTO users (id, username, email, password) VALUES
 	})
 }
 
-func TestUserRepository_FindByIDs(t *testing.T) {
-	ctx := context.Background()
-
-	dbMock := dbTest
-	_, err := dbMock.Exec(`
-INSERT INTO users (id, username, email, password) VALUES 
-	('32778434-4c34-4fd8-8108-07f38719f633', 'test-username-1', 'test1@mail.com', '$2a$12$MGpAKLP3TiaALlGuLUTs7eIBXLt4aVaZCm.DXKySziPlOMcCNU5Va'),
-	('e5663f77-0e5e-4b47-badd-215d32bdf195', 'test-username-2', 'test2@mail.com', '$2a$12$MGpAKLP3TiaALlGuLUTs7eIBXLt4aVaZCm.DXKySziPlOMcCNU5Va'),
-	('1a41aeb5-513c-4c79-9d37-812760e17c8b', 'test-username-3', 'test3@mail.com', '$2a$12$MGpAKLP3TiaALlGuLUTs7eIBXLt4aVaZCm.DXKySziPlOMcCNU5Va');
-`)
-	if err != nil {
-		assert.Fail(t, err.Error())
-	}
-	defer func() {
-		_, err = dbMock.Exec(`TRUNCATE users CASCADE;`)
-		if err != nil {
-			assert.Fail(t, err.Error())
-		}
-	}()
-
-	repo := NewUserRepository(dbMock)
-
-	t.Run("success find by ids", func(t *testing.T) {
-		result, err := repo.FindByIDs(ctx, []string{"32778434-4c34-4fd8-8108-07f38719f633", "e5663f77-0e5e-4b47-badd-215d32bdf195"})
-
-		assert.NoError(t, err)
-		assert.Len(t, result, 2)
-		assert.Equal(t, "32778434-4c34-4fd8-8108-07f38719f633", result[0].ID)
-		assert.Equal(t, "e5663f77-0e5e-4b47-badd-215d32bdf195", result[1].ID)
-	})
-
-	t.Run("success find by ids with invalid ids", func(t *testing.T) {
-		result, err := repo.FindByIDs(ctx, []string{"32778434-4c34-4fd8-8108-07f38719f633", "b1829d88-ee9c-4d3a-8a86-f8ce786069a7"})
-
-		assert.NoError(t, err)
-		assert.Len(t, result, 1)
-		assert.Equal(t, "32778434-4c34-4fd8-8108-07f38719f633", result[0].ID)
-	})
-
-	t.Run("failed if SelectContext failed", func(t *testing.T) {
-		expectedErr := customerror.ErrorInternalServer
-
-		failDBMock := &sqlxmock.DBer{}
-		failDBMock.On("SelectContext", ctx, mock.Anything, mock.Anything, "32778434-4c34-4fd8-8108-07f38719f633", "b1829d88-ee9c-4d3a-8a86-f8ce786069a7").Return(expectedErr)
-
-		failRepo := NewUserRepository(failDBMock)
-		users, err := failRepo.FindByIDs(ctx, []string{"32778434-4c34-4fd8-8108-07f38719f633", "b1829d88-ee9c-4d3a-8a86-f8ce786069a7"})
-
-		assert.EqualError(t, expectedErr, err.Error())
-		assert.Len(t, users, 0)
-		failDBMock.AssertExpectations(t)
-	})
-}
-
 func TestUserRepository_Insert(t *testing.T) {
 
 	ctx := context.Background()

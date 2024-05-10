@@ -40,32 +40,6 @@ func (_m *UserRepositoryProvider) FindByEmailOrUsername(ctx context.Context, ema
 	return r0, r1
 }
 
-// FindByIDs provides a mock function with given fields: ctx, ids
-func (_m *UserRepositoryProvider) FindByIDs(ctx context.Context, ids []string) ([]entity.User, error) {
-	ret := _m.Called(ctx, ids)
-
-	var r0 []entity.User
-	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, []string) ([]entity.User, error)); ok {
-		return rf(ctx, ids)
-	}
-	if rf, ok := ret.Get(0).(func(context.Context, []string) []entity.User); ok {
-		r0 = rf(ctx, ids)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]entity.User)
-		}
-	}
-
-	if rf, ok := ret.Get(1).(func(context.Context, []string) error); ok {
-		r1 = rf(ctx, ids)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // Insert provides a mock function with given fields: ctx, _a1
 func (_m *UserRepositoryProvider) Insert(ctx context.Context, _a1 entity.User) error {
 	ret := _m.Called(ctx, _a1)
