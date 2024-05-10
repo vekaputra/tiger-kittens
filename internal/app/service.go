@@ -16,7 +16,7 @@ func NewService(repo Repo, appConfig *config.Config) Service {
 	}
 
 	return Service{
-		TigerService: service.NewTigerService(repo.TigerRepo, repo.UserRepo),
+		TigerService: service.NewTigerService(repo.TigerRepo),
 		UserService:  service.NewUserService(userConfig, repo.UserRepo),
 	}
 }

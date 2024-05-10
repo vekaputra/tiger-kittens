@@ -25,14 +25,12 @@ type TigerServiceProvider interface {
 
 type TigerService struct {
 	TigerRepository pgsql.TigerRepositoryProvider
-	UserRepository  pgsql.UserRepositoryProvider
 	fnTimeNow       func() time.Time
 }
 
-func NewTigerService(tigerRepository pgsql.TigerRepositoryProvider, userRepository pgsql.UserRepositoryProvider) *TigerService {
+func NewTigerService(tigerRepository pgsql.TigerRepositoryProvider) *TigerService {
 	return &TigerService{
 		TigerRepository: tigerRepository,
-		UserRepository:  userRepository,
 		fnTimeNow:       time.Now,
 	}
 }
