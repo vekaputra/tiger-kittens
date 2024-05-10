@@ -30,6 +30,7 @@ type TigerRepositoryProvider interface {
 	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
 	TxFindByID(ctx context.Context, tx sqlx.ExtContext, id int) (*entity.Tiger, error)
+	TxFindSightingUploaderEmailsByTigerID(ctx context.Context, tx sqlx.ExtContext, tigerID int) ([]string, error)
 	TxInsertSighting(ctx context.Context, tx sqlx.ExtContext, entity entity.TigerSighting) error
 	TxUpdate(ctx context.Context, tx sqlx.ExtContext, entity entity.Tiger) error
 }
@@ -264,4 +265,37 @@ func (r *TigerRepository) CountSighting(ctx context.Context) (uint64, error) {
 	}
 
 	return totalItem, nil
+}
+
+func (r *TigerRepository) TxFindSightingUploaderEmailsByTigerID(ctx context.Context, tx sqlx.ExtContext, tigerID int) ([]string, error) {
+	query, args, err := r.sb.Select("DISTINCT u.email as email").
+		From(fmt.Sprintf(`%s ts`, TigerSightingTable)).
+		Join(fmt.Sprintf(`%s u ON u.id = ts.user_id`, UserTable)).
+		Join(fmt.Sprintf(`%s t ON t.id = ts.tiger_id`, TigerTable)).
+		Where(squirrel.Eq{"tiger_id": tigerID}).
+		ToSql()
+	if err != nil {
+		return []string{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var dest []struct {
+		Email string `db:"email"`
+	}
+	rows, err := tx.QueryxContext(ctx, query, args...)
+	if err != nil {
+		log.Error().Err(err).Msg("failed to query sighting uploader email by tiger id")
+		return []string{}, pkgerr.ErrWithStackTrace(err)
+	}
+	defer rows.Close()
+
+	if err = sqlx.StructScan(rows, &dest); err != nil {
+		log.Error().Err(err).Msg("failed to scan sighting uploader email by tiger id")
+		return []string{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result []string
+	for _, d := range dest {
+		result = append(result, d.Email)
+	}
+	return result, nil
 }

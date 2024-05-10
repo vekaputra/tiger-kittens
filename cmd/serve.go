@@ -28,7 +28,7 @@ type Client interface {
 	Close() error
 }
 
-func newServeCommand(srv Server, dbClient Client) *cobra.Command {
+func newServeCommand(srv Server, mailQueue Server, dbClient Client) *cobra.Command {
 	return &cobra.Command{
 		Use:   "serve",
 		Short: "Run HTTP server",
@@ -38,11 +38,20 @@ func newServeCommand(srv Server, dbClient Client) *cobra.Command {
 					log.Info().Msg(fmt.Sprintf("echo_server has shut down: %v", err))
 				}
 			}()
+			go func() {
+				if err := mailQueue.Serve(); err != nil {
+					log.Info().Msg(fmt.Sprintf("email_queue has shut down: %v", err))
+				}
+			}()
 
 			waitForShutdown()
 
 			log.Info().Msg("shutting down the server")
 			if err := srv.GracefulStop(); err != nil {
+				log.Error().Err(err).Send()
+			}
+
+			if err := mailQueue.GracefulStop(); err != nil {
 				log.Error().Err(err).Send()
 			}
 

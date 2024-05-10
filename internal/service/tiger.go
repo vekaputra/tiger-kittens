@@ -2,7 +2,10 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"time"
+
+	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
 
 	"github.com/jftuga/geodist"
 	"github.com/rs/zerolog/log"
@@ -24,12 +27,14 @@ type TigerServiceProvider interface {
 }
 
 type TigerService struct {
+	MailQueue       mailqueue.Provider
 	TigerRepository pgsql.TigerRepositoryProvider
 	fnTimeNow       func() time.Time
 }
 
-func NewTigerService(tigerRepository pgsql.TigerRepositoryProvider) *TigerService {
+func NewTigerService(mailQueue mailqueue.Provider, tigerRepository pgsql.TigerRepositoryProvider) *TigerService {
 	return &TigerService{
+		MailQueue:       mailQueue,
 		TigerRepository: tigerRepository,
 		fnTimeNow:       time.Now,
 	}
@@ -139,6 +144,27 @@ func (s *TigerService) CreateSighting(ctx context.Context, payload model.CreateS
 	errTx = s.TigerRepository.TxUpdate(ctx, tx, *tiger)
 	if errTx != nil {
 		return model.MessageResponse{}, pkgerr.ErrWithStackTrace(errTx)
+	}
+
+	emails, errTx := s.TigerRepository.TxFindSightingUploaderEmailsByTigerID(ctx, tx, tiger.ID)
+	if errTx != nil {
+		return model.MessageResponse{}, pkgerr.ErrWithStackTrace(errTx)
+	}
+
+	title := fmt.Sprintf("New sightings of tiger (%s)", tiger.Name)
+	body := fmt.Sprintf(
+		"Hi, we just found a new sightings of tiger (%s) at lat: %.7f, long: %.7f. It's last seen around %s",
+		tiger.Name,
+		tiger.LastLat,
+		tiger.LastLong,
+		tiger.LastSeen.Format(time.RFC3339),
+	)
+	for _, email := range emails {
+		s.MailQueue.Add(mailqueue.SendEmailJob{
+			DestinationEmail: email,
+			Title:            title,
+			Body:             body,
+		})
 	}
 
 	return model.MessageResponse{

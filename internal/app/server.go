@@ -3,6 +3,8 @@ package app
 import (
 	nhttp "net/http"
 
+	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
+
 	"github.com/labstack/echo/v4"
 	"github.com/vekaputra/tiger-kittens/internal/config"
 	"github.com/vekaputra/tiger-kittens/internal/http"
@@ -12,12 +14,14 @@ import (
 type Server struct {
 	Connection *Connection
 	Server     *EchoServer
+	MailQueue  *mailqueue.MailQueue
 }
 
 func NewServer(appConfig *config.Config) *Server {
 	conn := NewConnection(appConfig)
 	repo := NewRepo(conn)
-	service := NewService(repo, appConfig)
+	mailQueue := mailqueue.New(repo.TigerRepo, repo.UserRepo)
+	service := NewService(repo, appConfig, mailQueue)
 
 	srv := &http.AppServer{
 		TigerService: service.TigerService,
@@ -30,6 +34,7 @@ func NewServer(appConfig *config.Config) *Server {
 	return &Server{
 		Connection: conn,
 		Server:     e,
+		MailQueue:  mailQueue,
 	}
 }
 
