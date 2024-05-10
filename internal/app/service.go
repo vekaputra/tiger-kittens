@@ -13,7 +13,8 @@ type Service struct {
 
 func NewService(repo Repo, appConfig *config.Config, mailQueue mailqueue.Provider) Service {
 	userConfig := service.UserConfig{
-		JWTConfig: appConfig.JWTConfig,
+		PrivateKey:           appConfig.JWTConfig.PrivateKey,
+		ExpiredAfterInSecond: appConfig.JWTConfig.ExpiredAfterInSecond,
 	}
 
 	return Service{

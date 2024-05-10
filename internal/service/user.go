@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"crypto/rsa"
 	"time"
 
-	"github.com/vekaputra/tiger-kittens/internal/config"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
 	"github.com/vekaputra/tiger-kittens/internal/helper/hash"
@@ -16,7 +16,8 @@ import (
 )
 
 type UserConfig struct {
-	config.JWTConfig
+	PrivateKey           *rsa.PrivateKey
+	ExpiredAfterInSecond time.Duration
 }
 
 //go:generate mockery --name=UserServiceProvider --outpkg=mock --output=./mock

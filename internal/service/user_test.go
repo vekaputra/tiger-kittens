@@ -147,9 +147,10 @@ func TestUserService_Login(t *testing.T) {
 		}
 
 		privateKey, _ := rsa.GenerateKey(rand.Reader, 4096)
-		config := UserConfig{}
-		config.PrivateKey = privateKey
-		config.ExpiredAfterInSecond = time.Hour
+		config := UserConfig{
+			PrivateKey:           privateKey,
+			ExpiredAfterInSecond: time.Hour,
+		}
 
 		mockUserRepository := &mockuser.UserRepositoryProvider{}
 		service := NewUserService(config, mockUserRepository)

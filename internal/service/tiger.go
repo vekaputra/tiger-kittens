@@ -5,12 +5,11 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
-
 	"github.com/jftuga/geodist"
 	"github.com/rs/zerolog/log"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
+	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
 	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
