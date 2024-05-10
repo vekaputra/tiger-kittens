@@ -4,6 +4,8 @@ import (
 	"context"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/Masterminds/squirrel"
 	"github.com/rs/zerolog/log"
 	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
@@ -14,23 +16,30 @@ import (
 )
 
 const (
-	TigerTable = "tigers"
+	TigerTable         = "tigers"
+	TigerSightingTable = "tiger_sightings"
 )
 
 type TigerRepositoryProvider interface {
+	pkgsqlx.TxProvider
 	Count(ctx context.Context) (uint64, error)
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
+	TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error)
+	TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error
+	TxUpdate(ctx context.Context, tx *sqlx.Tx, entity entity.Tiger) error
 }
 
 type TigerRepository struct {
+	*pkgsqlx.Tx
 	db pkgsqlx.DBer
 	sb squirrel.StatementBuilderType
 }
 
 func NewTigerRepository(db pkgsqlx.DBer) *TigerRepository {
 	return &TigerRepository{
+		Tx: pkgsqlx.NewTx(db),
 		db: db,
 		sb: squirrel.StatementBuilder.PlaceholderFormat(squirrel.Dollar),
 	}
@@ -133,4 +142,76 @@ func (r *TigerRepository) FindWithPagination(ctx context.Context, page model.Pag
 	}
 
 	return result, nil
+}
+
+func (r *TigerRepository) TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error) {
+	query, args, err := r.sb.Select(
+		"id",
+		"date_of_birth",
+		"last_lat",
+		"last_long",
+		"last_photo",
+		"last_seen",
+		"name",
+		"created_at",
+		"updated_at",
+	).
+		From(TigerTable).
+		Where(squirrel.Eq{"id": id}).
+		Limit(1).
+		ToSql()
+	if err != nil {
+		return nil, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result entity.Tiger
+	if err = tx.GetContext(ctx, &result, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to find tigers by id")
+		return nil, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return &result, nil
+}
+
+func (r *TigerRepository) TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error {
+	query, args, err := r.sb.Insert(TigerSightingTable).
+		Columns("user_id", "tiger_id", "lat", "long", "photo").
+		Values(
+			entity.UserID,
+			entity.TigerID,
+			entity.Lat,
+			entity.Long,
+			entity.Photo,
+		).
+		ToSql()
+	if err != nil {
+		return pkgerr.ErrWithStackTrace(err)
+	}
+
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to insert new tiger sighting")
+		return pkgerr.ErrWithStackTrace(err)
+	}
+
+	return nil
+}
+
+func (r *TigerRepository) TxUpdate(ctx context.Context, tx *sqlx.Tx, entity entity.Tiger) error {
+	query, args, err := r.sb.Update(TigerTable).
+		Set("last_lat", entity.LastLat).
+		Set("last_long", entity.LastLong).
+		Set("last_photo", entity.LastPhoto).
+		Set("last_seen", entity.LastSeen).
+		Where(squirrel.Eq{"id": entity.ID}).
+		ToSql()
+	if err != nil {
+		return pkgerr.ErrWithStackTrace(err)
+	}
+
+	if _, err = tx.ExecContext(ctx, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to update tiger")
+		return pkgerr.ErrWithStackTrace(err)
+	}
+
+	return nil
 }

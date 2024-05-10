@@ -19,3 +19,11 @@ type ListTigerResponse struct {
 	Data       []entity.Tiger     `json:"data"`
 	Pagination PaginationResponse `json:"pagination"`
 }
+
+type CreateSightingRequest struct {
+	TigerID int     `form:"tiger_id"`
+	Lat     float64 `form:"lat"`
+	Long    float64 `form:"long"`
+	Photo   string
+	UserID  string
+}

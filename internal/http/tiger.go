@@ -3,13 +3,14 @@ package http
 import (
 	"time"
 
-	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
+	"github.com/vekaputra/tiger-kittens/internal/helper/context"
 
 	"github.com/labstack/echo/v4"
 	"github.com/rs/zerolog/log"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
 	"github.com/vekaputra/tiger-kittens/internal/helper/file"
+	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
 	"github.com/vekaputra/tiger-kittens/internal/helper/response"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	pkgerr "github.com/vekaputra/tiger-kittens/pkg/error"
@@ -17,6 +18,7 @@ import (
 
 const (
 	LastPhotoKey = "last_photo"
+	PhotoKey     = "photo"
 )
 
 func (s *AppServer) CreateTiger(e echo.Context) error {
@@ -76,6 +78,43 @@ func (s *AppServer) ListTiger(e echo.Context) error {
 	}
 
 	result, err := s.TigerService.List(ctx, pagination.DefaultPagination(page))
+	if err != nil {
+		return response.SendResponseWithNativeError(e, err)
+	}
+
+	return response.SendSuccessResponse(e, result)
+}
+
+func (s *AppServer) CreateSighting(e echo.Context) error {
+	ctx := e.Request().Context()
+
+	var payload model.CreateSightingRequest
+	if err := e.Bind(&payload); err != nil {
+		log.Error().Err(err).Msg("failed bind payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+
+	payload.UserID = context.GetUser(ctx)
+	if err := e.Validate(payload); err != nil {
+		log.Error().Err(err).Msg("failed validate payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+
+	filepath, err := file.Save(
+		e,
+		PhotoKey,
+		file.ResizeOption{
+			Width:    _const.ResizeWidth,
+			Height:   _const.ResizeHeight,
+			IsResize: _const.IsResizeImage,
+		},
+	)
+	if err != nil {
+		return response.SendResponseWithNativeError(e, err)
+	}
+	payload.Photo = filepath
+
+	result, err := s.TigerService.CreateSighting(ctx, payload)
 	if err != nil {
 		return response.SendResponseWithNativeError(e, err)
 	}

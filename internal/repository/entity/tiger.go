@@ -13,3 +13,13 @@ type Tiger struct {
 	CreatedAt   time.Time `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
 }
+
+type TigerSighting struct {
+	ID        int       `db:"id"`
+	UserID    string    `db:"user_id"`
+	TigerID   int       `db:"tiger_id"`
+	Photo     string    `db:"photo"`
+	Lat       float64   `db:"lat"`
+	Long      float64   `db:"long"`
+	CreatedAt time.Time `db:"created_at"`
+}
