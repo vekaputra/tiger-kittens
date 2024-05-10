@@ -27,7 +27,7 @@ type TigerRepositoryProvider interface {
 	CountSighting(ctx context.Context) (uint64, error)
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
-	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error)
+	FindSightingsByTigerIDWithPagination(ctx context.Context, tigerID int, page model.PaginationRequest) ([]entity.Sighting, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
 	TxFindByID(ctx context.Context, tx sqlx.ExtContext, id int) (*entity.Tiger, error)
 	TxFindSightingUploaderEmailsByTigerID(ctx context.Context, tx sqlx.ExtContext, tigerID int) ([]string, error)
@@ -221,7 +221,7 @@ func (r *TigerRepository) TxUpdate(ctx context.Context, tx sqlx.ExtContext, enti
 	return nil
 }
 
-func (r *TigerRepository) FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error) {
+func (r *TigerRepository) FindSightingsByTigerIDWithPagination(ctx context.Context, tigerID int, page model.PaginationRequest) ([]entity.Sighting, error) {
 	query, args, err := r.sb.Select(
 		"u.username as username",
 		"t.name as tiger_name",
@@ -233,6 +233,7 @@ func (r *TigerRepository) FindSightingWithPagination(ctx context.Context, page m
 		From(fmt.Sprintf(`%s ts`, TigerSightingTable)).
 		Join(fmt.Sprintf(`%s u ON u.id = ts.user_id`, UserTable)).
 		Join(fmt.Sprintf(`%s t ON t.id = ts.tiger_id`, TigerTable)).
+		Where(squirrel.Eq{"ts.tiger_id": tigerID}).
 		OrderBy("created_at DESC").
 		Offset(pagination.SQLOffset(page.Page, page.PerPage)).
 		Limit(page.PerPage).

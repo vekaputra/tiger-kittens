@@ -21,11 +21,16 @@ type ListTigerResponse struct {
 }
 
 type CreateSightingRequest struct {
-	TigerID int     `form:"tiger_id"`
+	TigerID int     `param:"tigerID"`
 	Lat     float64 `form:"lat"`
 	Long    float64 `form:"long"`
 	Photo   string
 	UserID  string
+}
+
+type ListSightingRequest struct {
+	PaginationRequest
+	TigerID int `param:"tigerID"`
 }
 
 type ListSightingResponse struct {

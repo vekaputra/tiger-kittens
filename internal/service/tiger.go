@@ -22,7 +22,7 @@ type TigerServiceProvider interface {
 	Create(ctx context.Context, payload model.CreateTigerRequest) (model.MessageResponse, error)
 	List(ctx context.Context, page model.PaginationRequest) (model.ListTigerResponse, error)
 	CreateSighting(ctx context.Context, payload model.CreateSightingRequest) (model.MessageResponse, error)
-	ListSighting(ctx context.Context, page model.PaginationRequest) (model.ListSightingResponse, error)
+	ListSighting(ctx context.Context, page model.ListSightingRequest) (model.ListSightingResponse, error)
 }
 
 type TigerService struct {
@@ -172,13 +172,13 @@ func (s *TigerService) CreateSighting(ctx context.Context, payload model.CreateS
 	}, nil
 }
 
-func (s *TigerService) ListSighting(ctx context.Context, page model.PaginationRequest) (model.ListSightingResponse, error) {
+func (s *TigerService) ListSighting(ctx context.Context, payload model.ListSightingRequest) (model.ListSightingResponse, error) {
 	count, err := s.TigerRepository.CountSighting(ctx)
 	if err != nil {
 		return model.ListSightingResponse{}, err
 	}
 
-	sightings, err := s.TigerRepository.FindSightingWithPagination(ctx, page)
+	sightings, err := s.TigerRepository.FindSightingsByTigerIDWithPagination(ctx, payload.TigerID, payload.PaginationRequest)
 	if err != nil {
 		return model.ListSightingResponse{}, err
 	}
@@ -186,9 +186,9 @@ func (s *TigerService) ListSighting(ctx context.Context, page model.PaginationRe
 	return model.ListSightingResponse{
 		Data: sightings,
 		Pagination: model.PaginationResponse{
-			Page:      page.Page,
-			PerPage:   page.PerPage,
-			TotalPage: pagination.TotalPage(count, page.PerPage),
+			Page:      payload.PaginationRequest.Page,
+			PerPage:   payload.PaginationRequest.PerPage,
+			TotalPage: pagination.TotalPage(count, payload.PaginationRequest.PerPage),
 			TotalItem: count,
 		},
 	}, nil

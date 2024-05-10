@@ -71,6 +71,12 @@ input CreateSighting {
     photo: Upload!
 }
 
+input ListSightingInput {
+    tigerID: ID!
+    page: Int!
+    perPage: Int!
+}
+
 input LoginUser {
     password: String!
     username: String!
@@ -84,7 +90,7 @@ input RegisterUser {
 
 type Query {
     tigers(input: PaginationInput): ListTiger!
-    tigerSightings(input: PaginationInput): ListSighting!
+    tigerSightings(input: ListSightingInput): ListSighting!
 }
 
 type Mutation {

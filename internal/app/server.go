@@ -76,9 +76,9 @@ func route(e *echo.Echo, srv *http.AppServer, gql *handler.Server, playground nh
 
 	tigerGroup := v1Group.Group("/tiger")
 	tigerGroup.GET("", srv.ListTiger)
-	tigerGroup.GET("/sighting", srv.ListSighting)
+	tigerGroup.GET("/:tigerID/sighting", srv.ListSighting)
 	tigerGroup.POST("", srv.CreateTiger, middleware.Auth(appConfig.JWTConfig.PrivateKey))
-	tigerGroup.POST("/sighting", srv.CreateSighting, middleware.Auth(appConfig.JWTConfig.PrivateKey))
+	tigerGroup.POST("/:tigerID/sighting", srv.CreateSighting, middleware.Auth(appConfig.JWTConfig.PrivateKey))
 
 	if appConfig.IsAllowCORS {
 		e.OPTIONS("/healthcheck", middleware.HandleOptionsRequest(nhttp.MethodGet))

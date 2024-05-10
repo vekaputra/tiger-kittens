@@ -29,6 +29,12 @@ type ListSighting struct {
 	Pagination *Pagination `json:"pagination"`
 }
 
+type ListSightingInput struct {
+	TigerID string `json:"tigerID"`
+	Page    int    `json:"page"`
+	PerPage int    `json:"perPage"`
+}
+
 type ListTiger struct {
 	Data       []*Tiger    `json:"data"`
 	Pagination *Pagination `json:"pagination"`

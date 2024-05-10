@@ -7,7 +7,6 @@ package graph
 import (
 	"context"
 	"fmt"
-	intctx "github.com/vekaputra/tiger-kittens/internal/helper/context"
 	"strconv"
 	"time"
 
@@ -15,6 +14,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/vekaputra/tiger-kittens/graph/model"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
+	intctx "github.com/vekaputra/tiger-kittens/internal/helper/context"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
 	"github.com/vekaputra/tiger-kittens/internal/helper/file"
 	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
@@ -197,15 +197,22 @@ func (r *queryResolver) Tigers(ctx context.Context, input *model.PaginationInput
 }
 
 // TigerSightings is the resolver for the tigerSightings field.
-func (r *queryResolver) TigerSightings(ctx context.Context, input *model.PaginationInput) (*model.ListSighting, error) {
-	var page intmodel.PaginationRequest
+func (r *queryResolver) TigerSightings(ctx context.Context, input *model.ListSightingInput) (*model.ListSighting, error) {
+	var payload intmodel.ListSightingRequest
 
 	if input != nil {
-		page.Page = uint64(input.Page)
-		page.PerPage = uint64(input.PerPage)
+		payload.Page = uint64(input.Page)
+		payload.PerPage = uint64(input.PerPage)
 	}
 
-	result, err := r.TigerService.ListSighting(ctx, pagination.DefaultPagination(page))
+	tigerID, err := strconv.Atoi(input.TigerID)
+	if err != nil {
+		return nil, err
+	}
+	payload.TigerID = tigerID
+	payload.PaginationRequest = pagination.DefaultPagination(payload.PaginationRequest)
+
+	result, err := r.TigerService.ListSighting(ctx, payload)
 	if err != nil {
 		return nil, err
 	}

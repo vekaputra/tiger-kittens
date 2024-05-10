@@ -83,7 +83,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		TigerSightings func(childComplexity int, input *model.PaginationInput) int
+		TigerSightings func(childComplexity int, input *model.ListSightingInput) int
 		Tigers         func(childComplexity int, input *model.PaginationInput) int
 	}
 
@@ -117,7 +117,7 @@ type MutationResolver interface {
 }
 type QueryResolver interface {
 	Tigers(ctx context.Context, input *model.PaginationInput) (*model.ListTiger, error)
-	TigerSightings(ctx context.Context, input *model.PaginationInput) (*model.ListSighting, error)
+	TigerSightings(ctx context.Context, input *model.ListSightingInput) (*model.ListSighting, error)
 }
 
 type executableSchema struct {
@@ -281,7 +281,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.TigerSightings(childComplexity, args["input"].(*model.PaginationInput)), true
+		return e.complexity.Query.TigerSightings(childComplexity, args["input"].(*model.ListSightingInput)), true
 
 	case "Query.tigers":
 		if e.complexity.Query.Tigers == nil {
@@ -410,6 +410,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateSighting,
 		ec.unmarshalInputCreateTiger,
+		ec.unmarshalInputListSightingInput,
 		ec.unmarshalInputLoginUser,
 		ec.unmarshalInputPaginationInput,
 		ec.unmarshalInputRegisterUser,
@@ -607,10 +608,10 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 func (ec *executionContext) field_Query_tigerSightings_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *model.PaginationInput
+	var arg0 *model.ListSightingInput
 	if tmp, ok := rawArgs["input"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("input"))
-		arg0, err = ec.unmarshalOPaginationInput2ᚖgithubᚗcomᚋvekaputraᚋtigerᚑkittensᚋgraphᚋmodelᚐPaginationInput(ctx, tmp)
+		arg0, err = ec.unmarshalOListSightingInput2ᚖgithubᚗcomᚋvekaputraᚋtigerᚑkittensᚋgraphᚋmodelᚐListSightingInput(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -1573,7 +1574,7 @@ func (ec *executionContext) _Query_tigerSightings(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().TigerSightings(rctx, fc.Args["input"].(*model.PaginationInput))
+		return ec.resolvers.Query().TigerSightings(rctx, fc.Args["input"].(*model.ListSightingInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -4289,6 +4290,47 @@ func (ec *executionContext) unmarshalInputCreateTiger(ctx context.Context, obj i
 	return it, nil
 }
 
+func (ec *executionContext) unmarshalInputListSightingInput(ctx context.Context, obj interface{}) (model.ListSightingInput, error) {
+	var it model.ListSightingInput
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"tigerID", "page", "perPage"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "tigerID":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tigerID"))
+			data, err := ec.unmarshalNID2string(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.TigerID = data
+		case "page":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("page"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Page = data
+		case "perPage":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("perPage"))
+			data, err := ec.unmarshalNInt2int(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.PerPage = data
+		}
+	}
+
+	return it, nil
+}
+
 func (ec *executionContext) unmarshalInputLoginUser(ctx context.Context, obj interface{}) (model.LoginUser, error) {
 	var it model.LoginUser
 	asMap := map[string]interface{}{}
@@ -5857,6 +5899,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	}
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) unmarshalOListSightingInput2ᚖgithubᚗcomᚋvekaputraᚋtigerᚑkittensᚋgraphᚋmodelᚐListSightingInput(ctx context.Context, v interface{}) (*model.ListSightingInput, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputListSightingInput(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) unmarshalOPaginationInput2ᚖgithubᚗcomᚋvekaputraᚋtigerᚑkittensᚋgraphᚋmodelᚐPaginationInput(ctx context.Context, v interface{}) (*model.PaginationInput, error) {

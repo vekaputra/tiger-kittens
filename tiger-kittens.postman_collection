@@ -1,0 +1,278 @@
+{
+	"info": {
+		"_postman_id": "4956537d-c993-48fc-ba7e-bb473e0033c4",
+		"name": "Tiger-Kittens",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "1433997"
+	},
+	"item": [
+		{
+			"name": "register",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"email\": \"other@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"username\": \"other\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9000/v1/user/register",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"user",
+						"register"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "login",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"password\": \"Test123\",\r\n    \"username\": \"username\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:9000/v1/user/login",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"user",
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create tiger",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1lZXQudmVrYXB1dHJhKzJAZ21haWwuY29tIiwiZXhwIjoxNzE3OTUzMTU5LCJzdWIiOiJmMTg3NjM3NS0yYjYzLTRlMmYtOTMxYi1lNDllMTI1ZjNmZmUiLCJ1c2VybmFtZSI6InVzZXJuYW1lIn0.J-EAlU74CHYncmuy71RCuMiXLT0osw0GnpweKTD29UOpEvWKtFrs1FbtGo4O8Fuo0wwI6WUCdGdfSInsstHiNKomJ12QKIOhnOQSS5dlx5U_uLgYZT6Is4gj_6z1sWPgE0TnF1UDNBNe3m-8plYsvqRNT2YU8nL1H1LdsMsrtLlDpiWtochAQ0iqHtSqyaH3_GZDTzxaDJpVknQ9aIyKRnvR3DGr49GHhTikIY-wPNc4_8yV2is00-WVM6EX6NkRunKb8SSs3COcVbdW52ysGddF_QB6_c391OsBO3bREcIfskN1uiC251WXBHg0o8TvYbmOH03OjQEgv6urDD1DAg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Auth",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "tiger_4",
+							"type": "text"
+						},
+						{
+							"key": "date_of_birth",
+							"value": "2024-01-01",
+							"type": "text"
+						},
+						{
+							"key": "last_seen",
+							"value": "2024-01-05T12:33:00+07:00",
+							"type": "text"
+						},
+						{
+							"key": "last_lat",
+							"value": "1.3601337",
+							"type": "text"
+						},
+						{
+							"key": "last_long",
+							"value": "103.831924",
+							"type": "text"
+						},
+						{
+							"key": "last_photo",
+							"type": "file",
+							"src": "/C:/Users/valen/Downloads/southgate/facilities/beach_sky_playground_full.jpg"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9000/v1/tiger",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"tiger"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list tiger",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:9000/v1/tiger?page=1&per_page=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"tiger"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "per_page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create sighting",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1lZXQudmVrYXB1dHJhKzJAZ21haWwuY29tIiwiZXhwIjoxNzE3OTUzMTU5LCJzdWIiOiJmMTg3NjM3NS0yYjYzLTRlMmYtOTMxYi1lNDllMTI1ZjNmZmUiLCJ1c2VybmFtZSI6InVzZXJuYW1lIn0.J-EAlU74CHYncmuy71RCuMiXLT0osw0GnpweKTD29UOpEvWKtFrs1FbtGo4O8Fuo0wwI6WUCdGdfSInsstHiNKomJ12QKIOhnOQSS5dlx5U_uLgYZT6Is4gj_6z1sWPgE0TnF1UDNBNe3m-8plYsvqRNT2YU8nL1H1LdsMsrtLlDpiWtochAQ0iqHtSqyaH3_GZDTzxaDJpVknQ9aIyKRnvR3DGr49GHhTikIY-wPNc4_8yV2is00-WVM6EX6NkRunKb8SSs3COcVbdW52ysGddF_QB6_c391OsBO3bREcIfskN1uiC251WXBHg0o8TvYbmOH03OjQEgv6urDD1DAg",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Auth",
+						"value": "",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "lat",
+							"value": "1.5501337",
+							"type": "text"
+						},
+						{
+							"key": "long",
+							"value": "103.431924",
+							"type": "text"
+						},
+						{
+							"key": "photo",
+							"type": "file",
+							"src": "/C:/Users/valen/Downloads/southgate/facilities/beach_sky_ampitheatre_full.jpg"
+						},
+						{
+							"key": "tiger_id",
+							"value": "3",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:9000/v1/tiger/sighting",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"tiger",
+						"sighting"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "list sighting",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "",
+						"type": "text",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "http://localhost:9000/v1/tiger/sighting?page=1&per_page=2",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "9000",
+					"path": [
+						"v1",
+						"tiger",
+						"sighting"
+					],
+					"query": [
+						{
+							"key": "page",
+							"value": "1"
+						},
+						{
+							"key": "per_page",
+							"value": "2"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
