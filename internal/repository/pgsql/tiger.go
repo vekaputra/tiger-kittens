@@ -2,6 +2,7 @@ package pgsql
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Masterminds/squirrel"
@@ -27,7 +28,7 @@ type TigerRepositoryProvider interface {
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
 	FindByIDs(ctx context.Context, ids []int) ([]entity.Tiger, error)
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
-	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest, orderBys ...string) ([]entity.TigerSighting, error)
+	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
 	TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error)
 	TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error
@@ -247,29 +248,30 @@ func (r *TigerRepository) FindByIDs(ctx context.Context, ids []int) ([]entity.Ti
 	return result, nil
 }
 
-func (r *TigerRepository) FindSightingWithPagination(ctx context.Context, page model.PaginationRequest, orderBys ...string) ([]entity.TigerSighting, error) {
+func (r *TigerRepository) FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error) {
 	query, args, err := r.sb.Select(
-		"id",
-		"user_id",
-		"tiger_id",
-		"photo",
-		"lat",
-		"long",
-		"created_at",
+		"u.username as username",
+		"t.name as tiger_name",
+		"ts.photo",
+		"ts.lat",
+		"ts.long",
+		"ts.created_at",
 	).
-		From(TigerSightingTable).
-		OrderBy(orderBys...).
+		From(fmt.Sprintf(`%s ts`, TigerSightingTable)).
+		Join(fmt.Sprintf(`%s u ON u.id = ts.user_id`, UserTable)).
+		Join(fmt.Sprintf(`%s t ON t.id = ts.tiger_id`, TigerTable)).
+		OrderBy("created_at DESC").
 		Offset(pagination.SQLOffset(page.Page, page.PerPage)).
 		Limit(page.PerPage).
 		ToSql()
 	if err != nil {
-		return []entity.TigerSighting{}, pkgerr.ErrWithStackTrace(err)
+		return []entity.Sighting{}, pkgerr.ErrWithStackTrace(err)
 	}
 
-	var result []entity.TigerSighting
+	var result []entity.Sighting
 	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
 		log.Error().Err(err).Msg("failed to find sightings with pagination")
-		return []entity.TigerSighting{}, pkgerr.ErrWithStackTrace(err)
+		return []entity.Sighting{}, pkgerr.ErrWithStackTrace(err)
 	}
 
 	return result, nil

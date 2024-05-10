@@ -23,3 +23,12 @@ type TigerSighting struct {
 	Long      float64   `db:"long"`
 	CreatedAt time.Time `db:"created_at"`
 }
+
+type Sighting struct {
+	Username  string    `json:"uploaded_by" db:"username"`
+	TigerName string    `json:"name" db:"tiger_name"`
+	Photo     string    `json:"photo" db:"photo"`
+	Lat       float64   `json:"lat" db:"lat"`
+	Long      float64   `json:"long" db:"long"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
+}

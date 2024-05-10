@@ -28,16 +28,7 @@ type CreateSightingRequest struct {
 	UserID  string
 }
 
-type Sighting struct {
-	Username  string    `json:"uploaded_by"`
-	TigerName string    `json:"name"`
-	Photo     string    `json:"photo"`
-	Lat       float64   `json:"lat"`
-	Long      float64   `json:"long"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
 type ListSightingResponse struct {
-	Data       []Sighting         `json:"data"`
+	Data       []entity.Sighting  `json:"data"`
 	Pagination PaginationResponse `json:"pagination"`
 }

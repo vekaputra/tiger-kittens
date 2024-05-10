@@ -155,46 +155,13 @@ func (s *TigerService) ListSighting(ctx context.Context, page model.PaginationRe
 		return model.ListSightingResponse{}, err
 	}
 
-	sightings, err := s.TigerRepository.FindSightingWithPagination(ctx, page, "created_at DESC")
+	sightings, err := s.TigerRepository.FindSightingWithPagination(ctx, page)
 	if err != nil {
 		return model.ListSightingResponse{}, err
-	}
-	if len(sightings) == 0 {
-		return model.ListSightingResponse{
-			Data: []model.Sighting{},
-			Pagination: model.PaginationResponse{
-				Page:      page.Page,
-				PerPage:   page.PerPage,
-				TotalPage: pagination.TotalPage(count, page.PerPage),
-				TotalItem: count,
-			},
-		}, nil
-	}
-
-	tigerMapByID, err := s.findTigersBySightingsAsMap(ctx, sightings)
-	if err != nil {
-		return model.ListSightingResponse{}, err
-	}
-
-	userMapByID, err := s.findUsersBySightingsAsMap(ctx, sightings)
-	if err != nil {
-		return model.ListSightingResponse{}, err
-	}
-
-	var result []model.Sighting
-	for _, sighting := range sightings {
-		result = append(result, model.Sighting{
-			Username:  userMapByID[sighting.UserID].Username,
-			TigerName: tigerMapByID[sighting.TigerID].Name,
-			Photo:     sighting.Photo,
-			Lat:       sighting.Lat,
-			Long:      sighting.Long,
-			CreatedAt: sighting.CreatedAt,
-		})
 	}
 
 	return model.ListSightingResponse{
-		Data: result,
+		Data: sightings,
 		Pagination: model.PaginationResponse{
 			Page:      page.Page,
 			PerPage:   page.PerPage,
@@ -202,48 +169,4 @@ func (s *TigerService) ListSighting(ctx context.Context, page model.PaginationRe
 			TotalItem: count,
 		},
 	}, nil
-}
-
-func (s *TigerService) findTigersBySightingsAsMap(ctx context.Context, sightings []entity.TigerSighting) (map[int]entity.Tiger, error) {
-	var tigerIDs []int
-	tigerMap := map[int]entity.Tiger{}
-	for _, sighting := range sightings {
-		if _, ok := tigerMap[sighting.TigerID]; !ok {
-			tigerMap[sighting.TigerID] = entity.Tiger{}
-			tigerIDs = append(tigerIDs, sighting.TigerID)
-		}
-	}
-
-	tigers, err := s.TigerRepository.FindByIDs(ctx, tigerIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, tiger := range tigers {
-		tigerMap[tiger.ID] = tiger
-	}
-
-	return tigerMap, nil
-}
-
-func (s *TigerService) findUsersBySightingsAsMap(ctx context.Context, sightings []entity.TigerSighting) (map[string]entity.User, error) {
-	var userIDs []string
-	userMap := map[string]entity.User{}
-	for _, sighting := range sightings {
-		if _, ok := userMap[sighting.UserID]; !ok {
-			userMap[sighting.UserID] = entity.User{}
-			userIDs = append(userIDs, sighting.UserID)
-		}
-	}
-
-	users, err := s.UserRepository.FindByIDs(ctx, userIDs)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, user := range users {
-		userMap[user.ID] = user
-	}
-
-	return userMap, nil
 }
