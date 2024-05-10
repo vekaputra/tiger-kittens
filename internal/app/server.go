@@ -44,6 +44,7 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 
 	tigerGroup := v1Group.Group("/tiger")
 	tigerGroup.GET("", srv.ListTiger)
+	tigerGroup.GET("/sighting", srv.ListSighting)
 	tigerGroup.POST("", srv.CreateTiger, middleware.Auth(appConfig.JWTConfig.PrivateKey))
 	tigerGroup.POST("/sighting", srv.CreateSighting, middleware.Auth(appConfig.JWTConfig.PrivateKey))
 
@@ -54,6 +55,6 @@ func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
 		userGroup.OPTIONS("/login", middleware.HandleOptionsRequest(nhttp.MethodPost))
 
 		tigerGroup.OPTIONS("", middleware.HandleOptionsRequest(nhttp.MethodPost, nhttp.MethodGet))
-		tigerGroup.OPTIONS("/sighting", middleware.HandleOptionsRequest(nhttp.MethodPost))
+		tigerGroup.OPTIONS("/sighting", middleware.HandleOptionsRequest(nhttp.MethodPost, nhttp.MethodGet))
 	}
 }

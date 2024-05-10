@@ -4,9 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/jmoiron/sqlx"
-
 	"github.com/Masterminds/squirrel"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog/log"
 	"github.com/vekaputra/tiger-kittens/internal/helper/pagination"
 	"github.com/vekaputra/tiger-kittens/internal/model"
@@ -23,8 +22,11 @@ const (
 type TigerRepositoryProvider interface {
 	pkgsqlx.TxProvider
 	Count(ctx context.Context) (uint64, error)
+	CountSighting(ctx context.Context) (uint64, error)
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
+	FindByIDs(ctx context.Context, ids []int) ([]entity.Tiger, error)
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
+	FindSightingWithPagination(ctx context.Context, page model.PaginationRequest, orderBys ...string) ([]entity.TigerSighting, error)
 	Insert(ctx context.Context, entity entity.Tiger) error
 	TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error)
 	TxInsertSighting(ctx context.Context, tx *sqlx.Tx, entity entity.TigerSighting) error
@@ -214,4 +216,77 @@ func (r *TigerRepository) TxUpdate(ctx context.Context, tx *sqlx.Tx, entity enti
 	}
 
 	return nil
+}
+
+func (r *TigerRepository) FindByIDs(ctx context.Context, ids []int) ([]entity.Tiger, error) {
+	query, args, err := r.sb.Select(
+		"id",
+		"date_of_birth",
+		"last_lat",
+		"last_long",
+		"last_photo",
+		"last_seen",
+		"name",
+		"created_at",
+		"updated_at",
+	).
+		From(TigerTable).
+		Where(squirrel.Eq{"id": ids}).
+		ToSql()
+	if err != nil {
+		return []entity.Tiger{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result []entity.Tiger
+	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to find tigers by ids")
+		return []entity.Tiger{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return result, nil
+}
+
+func (r *TigerRepository) FindSightingWithPagination(ctx context.Context, page model.PaginationRequest, orderBys ...string) ([]entity.TigerSighting, error) {
+	query, args, err := r.sb.Select(
+		"id",
+		"user_id",
+		"tiger_id",
+		"photo",
+		"lat",
+		"long",
+		"created_at",
+	).
+		From(TigerSightingTable).
+		OrderBy(orderBys...).
+		Offset(pagination.SQLOffset(page.Page, page.PerPage)).
+		Limit(page.PerPage).
+		ToSql()
+	if err != nil {
+		return []entity.TigerSighting{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result []entity.TigerSighting
+	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to find sightings with pagination")
+		return []entity.TigerSighting{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return result, nil
+}
+
+func (r *TigerRepository) CountSighting(ctx context.Context) (uint64, error) {
+	query, args, err := r.sb.Select("COUNT(1)").
+		From(TigerSightingTable).
+		ToSql()
+	if err != nil {
+		return 0, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var totalItem uint64
+	if err = r.db.GetContext(ctx, &totalItem, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to count sightings")
+		return 0, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return totalItem, nil
 }

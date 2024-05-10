@@ -18,6 +18,7 @@ const (
 //go:generate mockery --name=UserRepositoryProvider --outpkg=mock --output=../mock
 type UserRepositoryProvider interface {
 	FindByEmailOrUsername(ctx context.Context, email, username string) ([]entity.User, error)
+	FindByIDs(ctx context.Context, ids []string) ([]entity.User, error)
 	Insert(ctx context.Context, entity entity.User) error
 }
 
@@ -69,4 +70,22 @@ func (r *UserRepository) Insert(ctx context.Context, entity entity.User) error {
 	}
 
 	return nil
+}
+
+func (r *UserRepository) FindByIDs(ctx context.Context, ids []string) ([]entity.User, error) {
+	query, args, err := r.sb.Select("id", "email", "password", "username", "created_at").
+		From(UserTable).
+		Where(squirrel.Eq{"id": ids}).
+		ToSql()
+	if err != nil {
+		return []entity.User{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	var result []entity.User
+	if err = r.db.SelectContext(ctx, &result, query, args...); err != nil {
+		log.Error().Err(err).Msg("failed to find users by ids")
+		return []entity.User{}, pkgerr.ErrWithStackTrace(err)
+	}
+
+	return result, nil
 }

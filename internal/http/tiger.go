@@ -121,3 +121,24 @@ func (s *AppServer) CreateSighting(e echo.Context) error {
 
 	return response.SendSuccessResponse(e, result)
 }
+
+func (s *AppServer) ListSighting(e echo.Context) error {
+	ctx := e.Request().Context()
+
+	var page model.PaginationRequest
+	if err := e.Bind(&page); err != nil {
+		log.Error().Err(err).Msg("failed bind payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+	if err := e.Validate(page); err != nil {
+		log.Error().Err(err).Msg("failed validate payload")
+		return response.SendResponseWithNativeError(e, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody))
+	}
+
+	result, err := s.TigerService.ListSighting(ctx, pagination.DefaultPagination(page))
+	if err != nil {
+		return response.SendResponseWithNativeError(e, err)
+	}
+
+	return response.SendSuccessResponse(e, result)
+}
