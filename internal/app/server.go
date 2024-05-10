@@ -3,10 +3,14 @@ package app
 import (
 	nhttp "net/http"
 
-	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
+	"github.com/go-playground/validator/v10"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/labstack/echo/v4"
+	"github.com/vekaputra/tiger-kittens/graph"
 	"github.com/vekaputra/tiger-kittens/internal/config"
+	"github.com/vekaputra/tiger-kittens/internal/helper/mailqueue"
 	"github.com/vekaputra/tiger-kittens/internal/http"
 	"github.com/vekaputra/tiger-kittens/internal/http/middleware"
 )
@@ -28,8 +32,21 @@ func NewServer(appConfig *config.Config) *Server {
 		UserService:  service.UserService,
 	}
 
+	gqlHandler := handler.NewDefaultServer(
+		graph.NewExecutableSchema(
+			graph.Config{
+				Resolvers: &graph.Resolver{
+					Validate:     validator.New(validator.WithRequiredStructEnabled()),
+					TigerService: service.TigerService,
+					UserService:  service.UserService,
+				},
+			},
+		),
+	)
+	playGroundHandler := playground.Handler("Tiger Kittens", "/gql/query")
+
 	e := NewEcho(appConfig)
-	route(e.Echo, srv, appConfig)
+	route(e.Echo, srv, gqlHandler, playGroundHandler, appConfig)
 
 	return &Server{
 		Connection: conn,
@@ -38,8 +55,18 @@ func NewServer(appConfig *config.Config) *Server {
 	}
 }
 
-func route(e *echo.Echo, srv *http.AppServer, appConfig *config.Config) {
+func route(e *echo.Echo, srv *http.AppServer, gql *handler.Server, playground nhttp.HandlerFunc, appConfig *config.Config) {
 	e.GET("/healthcheck", srv.ReadinessCheck)
+
+	gqlGroup := e.Group("/gql")
+	gqlGroup.POST("/query", func(c echo.Context) error {
+		gql.ServeHTTP(c.Response(), c.Request())
+		return nil
+	}, middleware.Auth(appConfig.JWTConfig.PrivateKey))
+	gqlGroup.GET("/playground", func(c echo.Context) error {
+		playground.ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
 
 	v1Group := e.Group("/v1")
 

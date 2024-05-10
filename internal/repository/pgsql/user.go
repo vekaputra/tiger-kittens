@@ -64,8 +64,6 @@ func (r *UserRepository) Insert(ctx context.Context, entity entity.User) error {
 		return pkgerr.ErrWithStackTrace(err)
 	}
 
-	log.Print(query)
-	log.Print(args...)
 	_, err = r.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to insert new user")

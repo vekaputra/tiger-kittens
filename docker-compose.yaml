@@ -16,3 +16,12 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+  tiger-kittens:
+    image: tiger-kittens:latest
+    container_name: tiger-kittens-api
+    restart: always
+    ports:
+      - "9000:9000"
+    environment:
+      ENV: local
+      SQL_HOST: postgres

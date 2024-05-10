@@ -1,0 +1,95 @@
+scalar Date
+scalar Time
+scalar Upload
+
+type Message {
+    message: String!
+    timestamp: String!
+}
+
+type Pagination {
+    page: Int!
+    perPage: Int!
+    totalPage: Int!
+    totalItem: Int!
+}
+
+type Login {
+    accessToken: String!
+    timestamp: String!
+}
+
+type Tiger {
+    ID: ID!
+    dateOfBirth: Date!
+    lastLat: Float!
+    lastLong: Float!
+    lastSeen: Time!
+    lastPhoto: String!
+    name: String
+    createdAt: Time!
+    updatedAt: Time!
+}
+
+type Sighting {
+    uploadedBy: String!
+    tigerName: String!
+    photo: String!
+    lat: Float!
+    long: Float!
+    createdAt: Time!
+}
+
+type ListTiger {
+    data: [Tiger!]!
+    pagination: Pagination!
+}
+
+type ListSighting {
+    data: [Sighting!]!
+    pagination: Pagination!
+}
+
+input PaginationInput {
+    page: Int!
+    perPage: Int!
+}
+
+input CreateTiger {
+    dateOfBirth: Date!
+    lastLat: Float!
+    lastLong: Float!
+    lastPhoto: Upload!
+    lastSeen: Time!
+    name: String!
+}
+
+input CreateSighting {
+    tigerID: ID!
+    lat: Float!
+    long: Float!
+    photo: Upload!
+}
+
+input LoginUser {
+    password: String!
+    username: String!
+}
+
+input RegisterUser {
+    email: String!
+    password: String!
+    username: String!
+}
+
+type Query {
+    tigers(input: PaginationInput): ListTiger!
+    tigerSightings(input: PaginationInput): ListSighting!
+}
+
+type Mutation {
+    createTiger(input: CreateTiger!): Message!
+    createSighting(input: CreateSighting!): Message!
+    login(input: LoginUser!): Login!
+    register(input: RegisterUser!): Message!
+}

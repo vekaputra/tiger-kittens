@@ -49,7 +49,7 @@ func (s *TigerService) Create(ctx context.Context, payload model.CreateTigerRequ
 	}
 
 	err = s.TigerRepository.Insert(ctx, entity.Tiger{
-		DateOfBirth: payload.DateOfBirth,
+		DateOfBirth: payload.DateOfBirth.Format(time.DateOnly),
 		LastLat:     payload.LastLat,
 		LastLong:    payload.LastLong,
 		LastPhoto:   payload.LastPhoto,

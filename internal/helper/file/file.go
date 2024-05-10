@@ -3,6 +3,7 @@ package file
 import (
 	"fmt"
 	"image"
+	"io"
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
@@ -20,6 +21,10 @@ type ResizeOption struct {
 	IsResize bool
 }
 
+func SaveGQL(src io.Reader, opt ResizeOption) (string, error) {
+	return save(src, opt)
+}
+
 func Save(e echo.Context, key string, opt ResizeOption) (string, error) {
 	f, err := e.FormFile(key)
 	if err != nil {
@@ -34,6 +39,10 @@ func Save(e echo.Context, key string, opt ResizeOption) (string, error) {
 		return "", pkgerr.ErrWithStackTrace(err)
 	}
 
+	return save(src, opt)
+}
+
+func save(src io.Reader, opt ResizeOption) (string, error) {
 	img, ext, err := image.Decode(src)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to decode image")

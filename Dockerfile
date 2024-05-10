@@ -5,10 +5,14 @@ COPY ./cmd ./cmd
 COPY ./db ./db
 COPY ./env ./env
 COPY ./files ./files
+COPY ./graph ./graph
 COPY ./internal ./internal
+COPY ./pkg ./pkg
+COPY ./public ./public
 COPY ./main.go ./
 COPY ./go.mod ./
 COPY ./go.sum ./
+COPY ./gqlgen.yml ./
 
 RUN go env -w CGO_ENABLED=0
 RUN go env -w GO111MODULE="on"

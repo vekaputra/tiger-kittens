@@ -81,7 +81,7 @@ func (r *TigerRepository) Insert(ctx context.Context, entity entity.Tiger) error
 	query, args, err := r.sb.Insert(TigerTable).
 		Columns("date_of_birth", "last_lat", "last_long", "last_photo", "last_seen", "name").
 		Values(
-			entity.DateOfBirth.Format(time.DateOnly),
+			entity.DateOfBirth,
 			entity.LastLat,
 			entity.LastLong,
 			entity.LastPhoto,
