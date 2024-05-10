@@ -160,7 +160,7 @@ func (s *TigerService) CreateSighting(ctx context.Context, payload model.CreateS
 		tiger.LastSeen.Format(time.RFC3339),
 	)
 	for _, email := range emails {
-		s.MailQueue.Add(mailqueue.SendEmailJob{
+		go s.MailQueue.Add(mailqueue.SendEmailJob{
 			DestinationEmail: email,
 			Title:            title,
 			Body:             body,

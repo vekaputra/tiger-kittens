@@ -11,8 +11,9 @@ import (
 )
 
 type Config struct {
-	Env            string
 	DatabaseConfig DatabaseConfig
+	EmailConfig    EmailConfig
+	Env            string
 	IsAllowCORS    bool
 	IsEnableDebug  bool
 	JWTConfig      JWTConfig
@@ -31,8 +32,9 @@ func Load() *Config {
 	}
 
 	return &Config{
-		Env:            fatalGetString("ENV"),
 		DatabaseConfig: getDatabaseConfig(),
+		EmailConfig:    getEmailConfig(),
+		Env:            fatalGetString("ENV"),
 		IsAllowCORS:    fatalGetBool("ALLOW_CORS"),
 		IsEnableDebug:  fatalGetBool("ENABLE_DEBUG"),
 		JWTConfig:      getJWTConfig(),

@@ -20,7 +20,7 @@ type Server struct {
 func NewServer(appConfig *config.Config) *Server {
 	conn := NewConnection(appConfig)
 	repo := NewRepo(conn)
-	mailQueue := mailqueue.New(repo.TigerRepo, repo.UserRepo)
+	mailQueue := mailqueue.New(appConfig.EmailConfig, repo.TigerRepo, repo.UserRepo)
 	service := NewService(repo, appConfig, mailQueue)
 
 	srv := &http.AppServer{
