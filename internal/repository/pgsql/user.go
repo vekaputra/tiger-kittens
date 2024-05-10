@@ -41,6 +41,7 @@ func (r *UserRepository) FindByEmailOrUsername(ctx context.Context, email, usern
 			squirrel.Eq{"email": email},
 			squirrel.Eq{"username": username},
 		}).
+		OrderBy("username").
 		ToSql()
 	if err != nil {
 		return []entity.User{}, pkgerr.ErrWithStackTrace(err)
@@ -64,7 +65,10 @@ func (r *UserRepository) Insert(ctx context.Context, entity entity.User) error {
 		return pkgerr.ErrWithStackTrace(err)
 	}
 
-	if _, err = r.db.ExecContext(ctx, query, args...); err != nil {
+	log.Print(query)
+	log.Print(args...)
+	_, err = r.db.ExecContext(ctx, query, args...)
+	if err != nil {
 		log.Error().Err(err).Msg("failed to insert new user")
 		return pkgerr.ErrWithStackTrace(err)
 	}
