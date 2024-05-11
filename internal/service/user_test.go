@@ -14,14 +14,14 @@ import (
 	"github.com/vekaputra/tiger-kittens/internal/helper/jwt"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
-	mockuser "github.com/vekaputra/tiger-kittens/internal/repository/mock"
+	mockrepo "github.com/vekaputra/tiger-kittens/internal/repository/mock"
 	"golang.org/x/crypto/bcrypt"
 )
 
 func TestUserService_Register(t *testing.T) {
 	type TestSuite struct {
 		ctx                context.Context
-		mockUserRepository *mockuser.UserRepositoryProvider
+		mockUserRepository *mockrepo.UserRepositoryProvider
 		payload            model.RegisterUserRequest
 		service            *UserService
 	}
@@ -34,7 +34,7 @@ func TestUserService_Register(t *testing.T) {
 			Username: "test-username",
 		}
 
-		mockUserRepository := &mockuser.UserRepositoryProvider{}
+		mockUserRepository := &mockrepo.UserRepositoryProvider{}
 		service := NewUserService(UserConfig{}, mockUserRepository)
 		service.fnTimeNow = func() time.Time {
 			return timeNow
@@ -133,7 +133,7 @@ func TestUserService_Register(t *testing.T) {
 func TestUserService_Login(t *testing.T) {
 	type TestSuite struct {
 		ctx                context.Context
-		mockUserRepository *mockuser.UserRepositoryProvider
+		mockUserRepository *mockrepo.UserRepositoryProvider
 		payload            model.LoginUserRequest
 		respUsers          []entity.User
 		service            *UserService
@@ -152,7 +152,7 @@ func TestUserService_Login(t *testing.T) {
 			ExpiredAfterInSecond: time.Hour,
 		}
 
-		mockUserRepository := &mockuser.UserRepositoryProvider{}
+		mockUserRepository := &mockrepo.UserRepositoryProvider{}
 		service := NewUserService(config, mockUserRepository)
 		service.fnTimeNow = func() time.Time {
 			return timeNow

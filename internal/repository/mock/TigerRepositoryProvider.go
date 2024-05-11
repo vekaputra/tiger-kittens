@@ -82,23 +82,23 @@ func (_m *TigerRepositoryProvider) Count(ctx context.Context) (uint64, error) {
 	return r0, r1
 }
 
-// CountSighting provides a mock function with given fields: ctx
-func (_m *TigerRepositoryProvider) CountSighting(ctx context.Context) (uint64, error) {
-	ret := _m.Called(ctx)
+// CountSightingByTigerID provides a mock function with given fields: ctx, tigerID
+func (_m *TigerRepositoryProvider) CountSightingByTigerID(ctx context.Context, tigerID int) (uint64, error) {
+	ret := _m.Called(ctx, tigerID)
 
 	var r0 uint64
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context) (uint64, error)); ok {
-		return rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int) (uint64, error)); ok {
+		return rf(ctx, tigerID)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context) uint64); ok {
-		r0 = rf(ctx)
+	if rf, ok := ret.Get(0).(func(context.Context, int) uint64); ok {
+		r0 = rf(ctx, tigerID)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context) error); ok {
-		r1 = rf(ctx)
+	if rf, ok := ret.Get(1).(func(context.Context, int) error); ok {
+		r1 = rf(ctx, tigerID)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -132,25 +132,25 @@ func (_m *TigerRepositoryProvider) FindByName(ctx context.Context, name string) 
 	return r0, r1
 }
 
-// FindSightingWithPagination provides a mock function with given fields: ctx, page
-func (_m *TigerRepositoryProvider) FindSightingWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Sighting, error) {
-	ret := _m.Called(ctx, page)
+// FindSightingsByTigerIDWithPagination provides a mock function with given fields: ctx, tigerID, page
+func (_m *TigerRepositoryProvider) FindSightingsByTigerIDWithPagination(ctx context.Context, tigerID int, page model.PaginationRequest) ([]entity.Sighting, error) {
+	ret := _m.Called(ctx, tigerID, page)
 
 	var r0 []entity.Sighting
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, model.PaginationRequest) ([]entity.Sighting, error)); ok {
-		return rf(ctx, page)
+	if rf, ok := ret.Get(0).(func(context.Context, int, model.PaginationRequest) ([]entity.Sighting, error)); ok {
+		return rf(ctx, tigerID, page)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, model.PaginationRequest) []entity.Sighting); ok {
-		r0 = rf(ctx, page)
+	if rf, ok := ret.Get(0).(func(context.Context, int, model.PaginationRequest) []entity.Sighting); ok {
+		r0 = rf(ctx, tigerID, page)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]entity.Sighting)
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, model.PaginationRequest) error); ok {
-		r1 = rf(ctx, page)
+	if rf, ok := ret.Get(1).(func(context.Context, int, model.PaginationRequest) error); ok {
+		r1 = rf(ctx, tigerID, page)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -199,15 +199,15 @@ func (_m *TigerRepositoryProvider) Insert(ctx context.Context, _a1 entity.Tiger)
 }
 
 // TxFindByID provides a mock function with given fields: ctx, tx, id
-func (_m *TigerRepositoryProvider) TxFindByID(ctx context.Context, tx *sqlx.Tx, id int) (*entity.Tiger, error) {
+func (_m *TigerRepositoryProvider) TxFindByID(ctx context.Context, tx sqlx.ExtContext, id int) (*entity.Tiger, error) {
 	ret := _m.Called(ctx, tx, id)
 
 	var r0 *entity.Tiger
 	var r1 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sqlx.Tx, int) (*entity.Tiger, error)); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, int) (*entity.Tiger, error)); ok {
 		return rf(ctx, tx, id)
 	}
-	if rf, ok := ret.Get(0).(func(context.Context, *sqlx.Tx, int) *entity.Tiger); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, int) *entity.Tiger); ok {
 		r0 = rf(ctx, tx, id)
 	} else {
 		if ret.Get(0) != nil {
@@ -215,7 +215,7 @@ func (_m *TigerRepositoryProvider) TxFindByID(ctx context.Context, tx *sqlx.Tx, 
 		}
 	}
 
-	if rf, ok := ret.Get(1).(func(context.Context, *sqlx.Tx, int) error); ok {
+	if rf, ok := ret.Get(1).(func(context.Context, sqlx.ExtContext, int) error); ok {
 		r1 = rf(ctx, tx, id)
 	} else {
 		r1 = ret.Error(1)
@@ -224,12 +224,38 @@ func (_m *TigerRepositoryProvider) TxFindByID(ctx context.Context, tx *sqlx.Tx, 
 	return r0, r1
 }
 
+// TxFindSightingUploaderEmailsByTigerID provides a mock function with given fields: ctx, tx, tigerID
+func (_m *TigerRepositoryProvider) TxFindSightingUploaderEmailsByTigerID(ctx context.Context, tx sqlx.ExtContext, tigerID int) ([]string, error) {
+	ret := _m.Called(ctx, tx, tigerID)
+
+	var r0 []string
+	var r1 error
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, int) ([]string, error)); ok {
+		return rf(ctx, tx, tigerID)
+	}
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, int) []string); ok {
+		r0 = rf(ctx, tx, tigerID)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func(context.Context, sqlx.ExtContext, int) error); ok {
+		r1 = rf(ctx, tx, tigerID)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // TxInsertSighting provides a mock function with given fields: ctx, tx, _a2
-func (_m *TigerRepositoryProvider) TxInsertSighting(ctx context.Context, tx *sqlx.Tx, _a2 entity.TigerSighting) error {
+func (_m *TigerRepositoryProvider) TxInsertSighting(ctx context.Context, tx sqlx.ExtContext, _a2 entity.TigerSighting) error {
 	ret := _m.Called(ctx, tx, _a2)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sqlx.Tx, entity.TigerSighting) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, entity.TigerSighting) error); ok {
 		r0 = rf(ctx, tx, _a2)
 	} else {
 		r0 = ret.Error(0)
@@ -239,11 +265,11 @@ func (_m *TigerRepositoryProvider) TxInsertSighting(ctx context.Context, tx *sql
 }
 
 // TxUpdate provides a mock function with given fields: ctx, tx, _a2
-func (_m *TigerRepositoryProvider) TxUpdate(ctx context.Context, tx *sqlx.Tx, _a2 entity.Tiger) error {
+func (_m *TigerRepositoryProvider) TxUpdate(ctx context.Context, tx sqlx.ExtContext, _a2 entity.Tiger) error {
 	ret := _m.Called(ctx, tx, _a2)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(context.Context, *sqlx.Tx, entity.Tiger) error); ok {
+	if rf, ok := ret.Get(0).(func(context.Context, sqlx.ExtContext, entity.Tiger) error); ok {
 		r0 = rf(ctx, tx, _a2)
 	} else {
 		r0 = ret.Error(0)
