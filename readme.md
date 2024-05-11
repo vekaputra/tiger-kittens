@@ -7,7 +7,7 @@
 3. Run `make db-migrate` to sync schema migration to latest version
 4. Run `make db-seed` to run seeder query
 5. Run `make api-up` to build and run API service
-6. For development, run `make serve` instead to run directly from code, for development use go version 1.21.10
+6. For development, run `make serve` instead to run directly from code, for development use go version 1.21.10 and mockery version 2.36.0
 
 ## Email SMTP Setup
 
