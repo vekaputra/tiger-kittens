@@ -43,6 +43,11 @@ func (r *mutationResolver) CreateTiger(ctx context.Context, input model.CreateTi
 		return nil, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody)
 	}
 
+	if input.LastPhoto.Filename == "" {
+		log.Error().Err(err).Msg("last_photo not found")
+		return nil, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody)
+	}
+
 	filepath, err := file.SaveGQL(
 		input.LastPhoto.File,
 		file.ResizeOption{
@@ -83,6 +88,11 @@ func (r *mutationResolver) CreateSighting(ctx context.Context, input model.Creat
 
 	if err = r.Validate.Struct(payload); err != nil {
 		log.Error().Err(err).Msg("failed validate payload")
+		return nil, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody)
+	}
+
+	if input.Photo.Filename == "" {
+		log.Error().Err(err).Msg("photo not found")
 		return nil, pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody)
 	}
 

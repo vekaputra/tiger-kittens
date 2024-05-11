@@ -1,9 +1,9 @@
 {
 	"info": {
-		"_postman_id": "4956537d-c993-48fc-ba7e-bb473e0033c4",
-		"name": "Tiger-Kittens",
+		"_postman_id": "70e3f5df-b9ba-4a51-a2c1-bdea19817bdd",
+		"name": "tiger-kittens",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "1433997"
+		"_exporter_id": "26655164"
 	},
 	"item": [
 		{
@@ -13,7 +13,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\": \"other@gmail.com\",\r\n    \"password\": \"password\",\r\n    \"username\": \"other\"\r\n}",
+					"raw": "{\r\n    \"email\": \"new_mail@gmail.com\",\r\n    \"password\": \"Password1234\",\r\n    \"username\": \"newuser\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -21,12 +21,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9000/v1/user/register",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/user/register",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"user",
@@ -43,7 +41,7 @@
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"password\": \"Test123\",\r\n    \"username\": \"username\"\r\n}",
+					"raw": "{\r\n    \"password\": \"Password1234\",\r\n    \"username\": \"user_1\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -51,12 +49,10 @@
 					}
 				},
 				"url": {
-					"raw": "http://localhost:9000/v1/user/login",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/user/login",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"user",
@@ -74,7 +70,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1lZXQudmVrYXB1dHJhKzJAZ21haWwuY29tIiwiZXhwIjoxNzE3OTUzMTU5LCJzdWIiOiJmMTg3NjM3NS0yYjYzLTRlMmYtOTMxYi1lNDllMTI1ZjNmZmUiLCJ1c2VybmFtZSI6InVzZXJuYW1lIn0.J-EAlU74CHYncmuy71RCuMiXLT0osw0GnpweKTD29UOpEvWKtFrs1FbtGo4O8Fuo0wwI6WUCdGdfSInsstHiNKomJ12QKIOhnOQSS5dlx5U_uLgYZT6Is4gj_6z1sWPgE0TnF1UDNBNe3m-8plYsvqRNT2YU8nL1H1LdsMsrtLlDpiWtochAQ0iqHtSqyaH3_GZDTzxaDJpVknQ9aIyKRnvR3DGr49GHhTikIY-wPNc4_8yV2is00-WVM6EX6NkRunKb8SSs3COcVbdW52ysGddF_QB6_c391OsBO3bREcIfskN1uiC251WXBHg0o8TvYbmOH03OjQEgv6urDD1DAg",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -118,17 +114,15 @@
 						{
 							"key": "last_photo",
 							"type": "file",
-							"src": "/C:/Users/valen/Downloads/southgate/facilities/beach_sky_playground_full.jpg"
+							"src": []
 						}
 					]
 				},
 				"url": {
-					"raw": "http://localhost:9000/v1/tiger",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/tiger",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"tiger"
@@ -150,12 +144,10 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:9000/v1/tiger?page=1&per_page=2",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/tiger?page=1&per_page=5",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"tiger"
@@ -167,7 +159,7 @@
 						},
 						{
 							"key": "per_page",
-							"value": "2"
+							"value": "5"
 						}
 					]
 				}
@@ -182,7 +174,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Im1lZXQudmVrYXB1dHJhKzJAZ21haWwuY29tIiwiZXhwIjoxNzE3OTUzMTU5LCJzdWIiOiJmMTg3NjM3NS0yYjYzLTRlMmYtOTMxYi1lNDllMTI1ZjNmZmUiLCJ1c2VybmFtZSI6InVzZXJuYW1lIn0.J-EAlU74CHYncmuy71RCuMiXLT0osw0GnpweKTD29UOpEvWKtFrs1FbtGo4O8Fuo0wwI6WUCdGdfSInsstHiNKomJ12QKIOhnOQSS5dlx5U_uLgYZT6Is4gj_6z1sWPgE0TnF1UDNBNe3m-8plYsvqRNT2YU8nL1H1LdsMsrtLlDpiWtochAQ0iqHtSqyaH3_GZDTzxaDJpVknQ9aIyKRnvR3DGr49GHhTikIY-wPNc4_8yV2is00-WVM6EX6NkRunKb8SSs3COcVbdW52ysGddF_QB6_c391OsBO3bREcIfskN1uiC251WXBHg0o8TvYbmOH03OjQEgv6urDD1DAg",
+							"value": "{{access_token}}",
 							"type": "string"
 						}
 					]
@@ -211,7 +203,7 @@
 						{
 							"key": "photo",
 							"type": "file",
-							"src": "/C:/Users/valen/Downloads/southgate/facilities/beach_sky_ampitheatre_full.jpg"
+							"src": []
 						},
 						{
 							"key": "tiger_id",
@@ -221,15 +213,14 @@
 					]
 				},
 				"url": {
-					"raw": "http://localhost:9000/v1/tiger/sighting",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/tiger/3/sighting",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"tiger",
+						"3",
 						"sighting"
 					]
 				}
@@ -249,15 +240,14 @@
 					}
 				],
 				"url": {
-					"raw": "http://localhost:9000/v1/tiger/sighting?page=1&per_page=2",
-					"protocol": "http",
+					"raw": "{{base_url}}/v1/tiger/3/sighting?page=1&per_page=5",
 					"host": [
-						"localhost"
+						"{{base_url}}"
 					],
-					"port": "9000",
 					"path": [
 						"v1",
 						"tiger",
+						"3",
 						"sighting"
 					],
 					"query": [
@@ -267,7 +257,7 @@
 						},
 						{
 							"key": "per_page",
-							"value": "2"
+							"value": "5"
 						}
 					]
 				}

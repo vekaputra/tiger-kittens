@@ -173,7 +173,7 @@ func (s *TigerService) CreateSighting(ctx context.Context, payload model.CreateS
 }
 
 func (s *TigerService) ListSighting(ctx context.Context, payload model.ListSightingRequest) (model.ListSightingResponse, error) {
-	count, err := s.TigerRepository.CountSighting(ctx)
+	count, err := s.TigerRepository.CountSightingByTigerID(ctx, payload.TigerID)
 	if err != nil {
 		return model.ListSightingResponse{}, err
 	}

@@ -24,7 +24,7 @@ const (
 type TigerRepositoryProvider interface {
 	pkgsqlx.TxProvider
 	Count(ctx context.Context) (uint64, error)
-	CountSighting(ctx context.Context) (uint64, error)
+	CountSightingByTigerID(ctx context.Context, tigerID int) (uint64, error)
 	FindByName(ctx context.Context, name string) ([]entity.Tiger, error)
 	FindWithPagination(ctx context.Context, page model.PaginationRequest) ([]entity.Tiger, error)
 	FindSightingsByTigerIDWithPagination(ctx context.Context, tigerID int, page model.PaginationRequest) ([]entity.Sighting, error)
@@ -251,9 +251,10 @@ func (r *TigerRepository) FindSightingsByTigerIDWithPagination(ctx context.Conte
 	return result, nil
 }
 
-func (r *TigerRepository) CountSighting(ctx context.Context) (uint64, error) {
+func (r *TigerRepository) CountSightingByTigerID(ctx context.Context, tigerID int) (uint64, error) {
 	query, args, err := r.sb.Select("COUNT(1)").
 		From(TigerSightingTable).
+		Where(squirrel.Eq{"tiger_id": tigerID}).
 		ToSql()
 	if err != nil {
 		return 0, pkgerr.ErrWithStackTrace(err)

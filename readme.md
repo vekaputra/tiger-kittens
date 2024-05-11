@@ -36,7 +36,7 @@ If you already run seed query, you can use below credential to login
 
 ## REST API
 
-Postman collection can be found in the root of this project in file named `tiger-kittens.postman_collection`
+Postman collection and environment can be found in the root of this project in file named `tiger-kittens.postman_collection.json` and `tiger-kittens.postman_environment.json`
 
 ### List of available endpoint:
 

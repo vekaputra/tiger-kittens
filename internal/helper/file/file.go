@@ -1,9 +1,11 @@
 package file
 
 import (
+	"errors"
 	"fmt"
 	"image"
 	"io"
+	"net/http"
 
 	"github.com/anthonynsimon/bild/imgio"
 	"github.com/anthonynsimon/bild/transform"
@@ -27,6 +29,10 @@ func SaveGQL(src io.Reader, opt ResizeOption) (string, error) {
 
 func Save(e echo.Context, key string, opt ResizeOption) (string, error) {
 	f, err := e.FormFile(key)
+	if err != nil && errors.Is(err, http.ErrMissingFile) {
+		log.Error().Err(err).Msg("file not found")
+		return "", pkgerr.ErrWithStackTrace(customerror.ErrorInvalidRequestBody)
+	}
 	if err != nil {
 		log.Error().Err(err).Msg("failed to get form file")
 		return "", pkgerr.ErrWithStackTrace(err)
