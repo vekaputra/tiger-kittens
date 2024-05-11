@@ -25,3 +25,17 @@ services:
     environment:
       ENV: local
       SQL_HOST: postgres
+  tiger-kittens-migrate:
+    image: tiger-kittens:latest
+    container_name: tiger-kittens-migration
+    environment:
+      ENV: local
+      SQL_HOST: postgres
+    command: ./tiger-kittens db:migrate
+  tiger-kittens-seed:
+    image: tiger-kittens:latest
+    container_name: tiger-kittens-seeder
+    environment:
+      ENV: local
+      SQL_HOST: postgres
+    command: ./tiger-kittens db:seed

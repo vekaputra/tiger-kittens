@@ -2,11 +2,12 @@
 
 ## How to run
 
-1. This requires docker & docker-compose to be installed, and port 9000 to be available
+1. This requires docker & docker-compose to be installed, and port 9000 and 5432 to be available
 2. Run `make db-up` to spawn postgres container
 3. Run `make db-migrate` to sync schema migration to latest version
-4. Run `make api-up` to build and run API service
-5. For development, run `make serve` instead to run directly from code, for development use go version 1.21.10
+4. Run `make db-seed` to run seeder query
+5. Run `make api-up` to build and run API service
+6. For development, run `make serve` instead to run directly from code, for development use go version 1.21.10
 
 ## Email SMTP Setup
 
@@ -21,6 +22,17 @@ EMAIL_SERVER_HOST=smtp.gmail.com
 ```
 
 This email feature is tested using GMAIL only during development.
+
+## Default Credential
+
+If you already run seed query, you can use below credential to login
+
+| username | email                      | password     |
+|----------|----------------------------|--------------|
+| user_1   | meet.vekaputra+1@gmail.com | Password1234 |
+| user_2   | meet.vekaputra+2@gmail.com | Password1234 |
+| user_3   | meet.vekaputra+3@gmail.com | Password1234 |
+| user_4   | meet.vekaputra+4@gmail.com | Password1234 |
 
 ## REST API
 

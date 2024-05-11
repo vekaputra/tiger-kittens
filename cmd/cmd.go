@@ -26,6 +26,7 @@ func New(c Config, db DB, srv *app.Server) *cobra.Command {
 	cmd.AddCommand(newServeCommand(srv.Server, srv.MailQueue, srv.Connection.DB))
 	cmd.AddCommand(newDBMigrateCommand(db))
 	cmd.AddCommand(newDBRollbackCommand(db))
+	cmd.AddCommand(newDBSeedCommand(db))
 
 	return cmd
 }
