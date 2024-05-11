@@ -1,8 +1,26 @@
 # Tiger Kittens
 
-## Setup
+## How to run
 
+1. This requires docker & docker-compose to be installed, and port 9000 to be available
+2. Run `make db-up` to spawn postgres container
+3. Run `make db-migrate` to sync schema migration to latest version
+4. Run `make api-up` to build and run API service
+5. For development, run `make serve` instead to run directly from code, for development use go version 1.21.10
 
+## Email SMTP Setup
+
+To enable sending email there is some env that need to be configured:
+```
+// .env.local
+EMAIL_ENABLED=false # set to true, if you want to enable sending through google email
+EMAIL_APP_PASSWORD= # generate app password from your google email in this link https://myaccount.google.com/apppasswords
+EMAIL_SENDER= # put your google email here, ex: my-email@gmail.com
+EMAIL_SERVER_ADDR=smtp.gmail.com:587
+EMAIL_SERVER_HOST=smtp.gmail.com
+```
+
+This email feature is tested using GMAIL only during development.
 
 ## REST API
 
@@ -13,7 +31,6 @@ Postman collection can be found in the root of this project in file named `tiger
 ### Register `POST /v1/user/register`
 
 Create new user
-
 ```
 Validation:
 - email is required, must be an email, max 64 char
@@ -24,7 +41,6 @@ Validation:
 ### Login `POST /v1/user/login`
 
 Login to existing user
-
 ```
 Validation:
 - password is required, between 8-20 char, must contain lower case, upper case and number
@@ -42,13 +58,14 @@ Validation:
 - lastPhoto is required, can only handle jpeg and png
 - date_of_birth is required, date only (2006-01-02)
 - name is required, between 3-64 char
+- need HTTP Header 'Authorization: Bearer <access_token>'
 ```
 
 ### List Tiger `GET /v1/tiger?page=1&per_page=5`
 
 List all tigers according to pagination
 
-### Create Sighting `POST /v1/tiger/{tigerID}sighting`
+### Create Sighting `POST /v1/tiger/{tigerID}/sighting`
 
 Create new sighting, will update lastLat, lastLong, lastSeen and lastPhoto in related tigerID
 ```
@@ -56,6 +73,8 @@ Validation:
 - lat is required, between -90 - 90
 - long is required, between -180 - 180
 - photo is required, can only handle jpeg and png
+- can only add new sighting if range from previous sighting > 5km, this is calculated using Haversine formula from lat & long value
+- need HTTP Header 'Authorization: Bearer <access_token>'
 ```
 
 ### List Sighting `GET /v1/tiger/{tigerID}/sighting`
