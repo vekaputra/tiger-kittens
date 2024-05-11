@@ -5,9 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jmoiron/sqlx"
+
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	_const "github.com/vekaputra/tiger-kittens/internal/const"
 	"github.com/vekaputra/tiger-kittens/internal/helper/customerror"
+	mockmailqueue "github.com/vekaputra/tiger-kittens/internal/helper/mailqueue/mock"
 	"github.com/vekaputra/tiger-kittens/internal/model"
 	"github.com/vekaputra/tiger-kittens/internal/repository/entity"
 	mockrepo "github.com/vekaputra/tiger-kittens/internal/repository/mock"
@@ -425,5 +429,486 @@ func TestTigerService_ListSighting(t *testing.T) {
 		assert.EqualError(t, expectedErr, err.Error())
 		assert.Equal(t, model.ListSightingResponse{}, result)
 		suite.mockTigerRepository.AssertExpectations(t)
+	})
+}
+
+func TestTigerService_CreateSighting(t *testing.T) {
+	type TestSuite struct {
+		ctx                 context.Context
+		mockTx              *sqlx.Tx
+		mockMailQueue       *mockmailqueue.Provider
+		mockTigerRepository *mockrepo.TigerRepositoryProvider
+		service             *TigerService
+	}
+
+	setupTest := func() *TestSuite {
+		timeNow, _ := time.Parse(time.RFC3339, "2024-01-01T12:33:12Z00:00")
+		mockMailQueue := &mockmailqueue.Provider{}
+		mockTigerRepository := &mockrepo.TigerRepositoryProvider{}
+		service := NewTigerService(mockMailQueue, mockTigerRepository)
+		service.fnTimeNow = func() time.Time {
+			return timeNow
+		}
+		service.isWaitGoroutine = true
+
+		return &TestSuite{
+			ctx:                 context.Background(),
+			mockTx:              &sqlx.Tx{},
+			mockMailQueue:       mockMailQueue,
+			mockTigerRepository: mockTigerRepository,
+			service:             service,
+		}
+	}
+
+	t.Run("success", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+
+		updatedTiger := respTiger
+		updatedTiger.LastLat = payload.Lat
+		updatedTiger.LastLong = payload.Long
+		updatedTiger.LastPhoto = payload.Photo
+		updatedTiger.LastSeen = suite.service.fnTimeNow()
+
+		respSightingUploader := []string{"test1@mail.com", "test2@mail.com"}
+
+		expectedResult := model.MessageResponse{
+			Message:   _const.CreateSightingSuccessMessage,
+			Timestamp: suite.service.fnTimeNow().Format(time.RFC3339),
+		}
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(nil)
+		suite.mockTigerRepository.On("TxUpdate", suite.ctx, suite.mockTx, updatedTiger).Return(nil)
+		suite.mockTigerRepository.On("TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID).Return(respSightingUploader, nil)
+		suite.mockMailQueue.On("Add", mock.AnythingOfType("mailqueue.SendEmailJob")).Times(2)
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, nil).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResult, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("success no email", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+
+		updatedTiger := respTiger
+		updatedTiger.LastLat = payload.Lat
+		updatedTiger.LastLong = payload.Long
+		updatedTiger.LastPhoto = payload.Photo
+		updatedTiger.LastSeen = suite.service.fnTimeNow()
+
+		expectedResult := model.MessageResponse{
+			Message:   _const.CreateSightingSuccessMessage,
+			Timestamp: suite.service.fnTimeNow().Format(time.RFC3339),
+		}
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(nil)
+		suite.mockTigerRepository.On("TxUpdate", suite.ctx, suite.mockTx, updatedTiger).Return(nil)
+		suite.mockTigerRepository.On("TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID).Return([]string{}, nil)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, nil).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResult, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on BeginTx failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		expectedErr := customerror.ErrorInternalServer
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(nil, expectedErr)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindByID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxInsertSighting", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxUpdate", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.AssertNotCalled(t, "CloseTx", mock.Anything, nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on TxFindByID failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		expectedErr := customerror.ErrorInternalServer
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(nil, expectedErr)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxInsertSighting", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxUpdate", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, expectedErr).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on tiger not found", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		expectedErr := customerror.ErrorTigerNotFound
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(nil, nil)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxInsertSighting", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxUpdate", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, nil).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on sighting less than 5 km", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     50.001,
+			LastLong:    50.001,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+		expectedErr := customerror.ErrorSightingWithin5KM
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxInsertSighting", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxUpdate", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, nil).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on TxInsertSighting failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+		expectedErr := customerror.ErrorSightingWithin5KM
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(expectedErr)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxUpdate", suite.ctx, suite.mockTx, mock.Anything)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, expectedErr).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on TxUpdate failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+
+		updatedTiger := respTiger
+		updatedTiger.LastLat = payload.Lat
+		updatedTiger.LastLong = payload.Long
+		updatedTiger.LastPhoto = payload.Photo
+		updatedTiger.LastSeen = suite.service.fnTimeNow()
+
+		expectedErr := customerror.ErrorInternalServer
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(nil)
+		suite.mockTigerRepository.On("TxUpdate", suite.ctx, suite.mockTx, updatedTiger).Return(expectedErr)
+		suite.mockTigerRepository.AssertNotCalled(t, "TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, expectedErr).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on TxFindSightingUploaderEmailsByTigerID failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+
+		updatedTiger := respTiger
+		updatedTiger.LastLat = payload.Lat
+		updatedTiger.LastLong = payload.Long
+		updatedTiger.LastPhoto = payload.Photo
+		updatedTiger.LastSeen = suite.service.fnTimeNow()
+
+		expectedErr := customerror.ErrorInternalServer
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(nil)
+		suite.mockTigerRepository.On("TxUpdate", suite.ctx, suite.mockTx, updatedTiger).Return(nil)
+		suite.mockTigerRepository.On("TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID).Return([]string{}, expectedErr)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, expectedErr).Return(nil)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.EqualError(t, expectedErr, err.Error())
+		assert.Equal(t, model.MessageResponse{}, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
+	})
+
+	t.Run("failed on CloseTx failed", func(t *testing.T) {
+		suite := setupTest()
+		payload := model.CreateSightingRequest{
+			TigerID: 1,
+			Lat:     50,
+			Long:    50,
+			UserID:  "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			Photo:   "public/no_image.svg",
+		}
+		payloadInsertSighting := entity.TigerSighting{
+			UserID:    "65b5c89b-b425-44e1-af3d-280ab5f4a6c2",
+			TigerID:   1,
+			Photo:     "public/no_image.svg",
+			Lat:       50,
+			Long:      50,
+			CreatedAt: suite.service.fnTimeNow(),
+		}
+		respTiger := entity.Tiger{
+			ID:          1,
+			DateOfBirth: "2024-01-01",
+			LastLat:     49,
+			LastLong:    49,
+			LastSeen:    suite.service.fnTimeNow(),
+			LastPhoto:   "public/no_image.svg",
+			Name:        "tiger_1",
+			CreatedAt:   suite.service.fnTimeNow(),
+			UpdatedAt:   suite.service.fnTimeNow(),
+		}
+
+		updatedTiger := respTiger
+		updatedTiger.LastLat = payload.Lat
+		updatedTiger.LastLong = payload.Long
+		updatedTiger.LastPhoto = payload.Photo
+		updatedTiger.LastSeen = suite.service.fnTimeNow()
+
+		expectedErr := customerror.ErrorInternalServer
+		expectedResult := model.MessageResponse{
+			Message:   _const.CreateSightingSuccessMessage,
+			Timestamp: suite.service.fnTimeNow().Format(time.RFC3339),
+		}
+
+		suite.mockTigerRepository.On("BeginTx", suite.ctx).Return(suite.mockTx, nil)
+		suite.mockTigerRepository.On("TxFindByID", suite.ctx, suite.mockTx, payload.TigerID).Return(&respTiger, nil)
+		suite.mockTigerRepository.On("TxInsertSighting", suite.ctx, suite.mockTx, payloadInsertSighting).Return(nil)
+		suite.mockTigerRepository.On("TxUpdate", suite.ctx, suite.mockTx, updatedTiger).Return(nil)
+		suite.mockTigerRepository.On("TxFindSightingUploaderEmailsByTigerID", suite.ctx, suite.mockTx, payload.TigerID).Return([]string{}, nil)
+		suite.mockMailQueue.AssertNotCalled(t, "Add", mock.AnythingOfType("mailqueue.SendEmailJob"))
+		suite.mockTigerRepository.On("CloseTx", suite.mockTx, nil).Return(expectedErr)
+
+		result, err := suite.service.CreateSighting(suite.ctx, payload)
+
+		assert.NoError(t, err)
+		assert.Equal(t, expectedResult, result)
+
+		suite.mockTigerRepository.AssertExpectations(t)
+		suite.mockMailQueue.AssertExpectations(t)
 	})
 }

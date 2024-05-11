@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/jftuga/geodist"
@@ -28,6 +29,7 @@ type TigerServiceProvider interface {
 type TigerService struct {
 	MailQueue       mailqueue.Provider
 	TigerRepository pgsql.TigerRepositoryProvider
+	isWaitGoroutine bool
 	fnTimeNow       func() time.Time
 }
 
@@ -35,6 +37,7 @@ func NewTigerService(mailQueue mailqueue.Provider, tigerRepository pgsql.TigerRe
 	return &TigerService{
 		MailQueue:       mailQueue,
 		TigerRepository: tigerRepository,
+		isWaitGoroutine: false,
 		fnTimeNow:       time.Now,
 	}
 }
@@ -158,12 +161,21 @@ func (s *TigerService) CreateSighting(ctx context.Context, payload model.CreateS
 		tiger.LastLong,
 		tiger.LastSeen.Format(time.RFC3339),
 	)
+
+	wg := sync.WaitGroup{}
 	for _, email := range emails {
-		go s.MailQueue.Add(mailqueue.SendEmailJob{
-			DestinationEmail: email,
-			Title:            title,
-			Body:             body,
-		})
+		wg.Add(1)
+		go func(email string) {
+			defer wg.Done()
+			s.MailQueue.Add(mailqueue.SendEmailJob{
+				DestinationEmail: email,
+				Title:            title,
+				Body:             body,
+			})
+		}(email)
+	}
+	if s.isWaitGoroutine {
+		wg.Wait()
 	}
 
 	return model.MessageResponse{
